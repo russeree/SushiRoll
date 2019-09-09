@@ -1,0 +1,30 @@
+/*
+ * sushi_menu.h
+ *
+ *  Created on: Aug 20, 2019
+ *      Author: Reese
+ */
+
+#ifndef SUSHI_MENU_H_
+#define SUSHI_MENU_H_
+
+#include "main.h" //Need to include this for the generalized sushi state construct
+#include "sushi_uart.h"
+#include "sushi_dma.h"
+
+
+extern SushiState sushiState;
+extern UART_HandleTypeDef sushiUART;
+extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
+
+/* Messages and Menu Options Conrtol */
+void sushiMenuWelcome(void);
+void sushiMenuDisplay(void);
+void sushiDisplayCursor(void);
+
+/* Handelers and Patches */
+void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
+void sushiInputFetch(void);
+void sushiWriteChangesToSRAM(void);
+
+#endif /* SUSHI_MENU_H_ */
