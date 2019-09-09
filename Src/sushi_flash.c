@@ -11,7 +11,7 @@
 
 extern void FLASH_PageErase(uint32_t PageAddress);
 
-uint8_t flashBusy;
+volatile uint8_t flashBusy; //This is the flash busy status, can be checked by other interupts 0 = not busy 1 = busy
 
 void sushiFlashMemInit(void){
 	//Enable interupts for the flash operations timing
