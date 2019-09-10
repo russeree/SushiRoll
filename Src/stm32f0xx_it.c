@@ -166,10 +166,12 @@ extern void sushiInputFetch(void);
 void DMA1_Channel4_5_IRQHandler(void)
 {
 	if(DMA1->ISR & DMA_ISR_TCIF4) { //RX RECEIVE COMPLETE
-		sushiUART.gState = HAL_UART_STATE_READY;
-		sushiUART1tx.State = HAL_DMA_STATE_READY;
-		__HAL_UNLOCK(&sushiUART1tx);
 		HAL_DMA_IRQHandler(sushiUART.hdmatx);
+		if(dmaTXBusy == 0){
+			sushiUART.gState = HAL_UART_STATE_READY;
+			sushiUART1tx.State = HAL_DMA_STATE_READY;
+			__HAL_UNLOCK(&sushiUART1tx);
+		}
 	}
 	if(DMA1->ISR & DMA_ISR_TCIF5) { //rx RECEIVE COMPLETE
 		DMA1->IFCR = DMA_IFCR_CTCIF5;

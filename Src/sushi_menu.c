@@ -122,7 +122,6 @@ void sushiInputFetch(void){
 			default:{}
 		}
 	}
-	sushiMenuMultiUartDMATX(&sushiUART, &DMA_RX_Buffer[0], 1);
 }
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
@@ -156,7 +155,8 @@ void sushiMenuDisplay(void){
  */
 void sushiMenuWelcome(void){
 	sushiMenuStatePrevious = sushiMenuState;
-	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)&sushiClearScreen[1], 3);
+	HAL_Delay(1);
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiClearScreen, 4);
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiAuthorText, sizeof(sushiAuthorText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuWelcomeText, sizeof(sushiMenuWelcomeText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuItemsText, sizeof(sushiMenuItemsText));
@@ -167,8 +167,12 @@ void sushiMenuWelcome(void){
  * @desc: Allows for a blocking TX so that if the user needs to USE HAL_UART_Transmit_DMA in the same function call it is possible
  * @desc2: THe reson for this is if you use 2 HAL_UART_Transmit_DMA in the same function call, the State will get stuck as busy, and a callback is not executed until the function completes
  */
+extern DMA_HandleTypeDef  sushiUART1tx;
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size){
 	HAL_UART_Transmit_DMA(huart, pData, Size);
 	dmaTXBusy = 1;
 	while(dmaTXBusy == 1){}
+	sushiUART.gState = HAL_UART_STATE_READY;
+	sushiUART1tx.State = HAL_DMA_STATE_READY;
+	__HAL_UNLOCK(&sushiUART1tx);
 }
