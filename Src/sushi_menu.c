@@ -170,9 +170,9 @@ void sushiMenuWelcome(void){
 extern DMA_HandleTypeDef  sushiUART1tx;
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size){
 	HAL_UART_Transmit_DMA(huart, pData, Size);
-	dmaTXBusy = 1;
-	while(dmaTXBusy == 1){}
-	sushiUART.gState = HAL_UART_STATE_READY;
-	sushiUART1tx.State = HAL_DMA_STATE_READY;
-	__HAL_UNLOCK(&sushiUART1tx);
+	dmaTXBusy = 1; //Set the DMA TX as a busy
+	while(dmaTXBusy == 1){} //This is a blocking statement, I Assume I will be using other interupts to override this...
+	sushiUART.gState = HAL_UART_STATE_READY;  //This must be called
+	sushiUART1tx.State = HAL_DMA_STATE_READY; //This must be called
+	__HAL_UNLOCK(&sushiUART1tx); //This Must be Called
 }
