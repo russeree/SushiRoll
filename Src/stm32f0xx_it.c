@@ -178,10 +178,9 @@ void DMA1_Channel4_5_IRQHandler(void)
 	}
 	HAL_NVIC_ClearPendingIRQ(DMA1_Channel4_5_IRQn);
 }
-/* Flash Memory Operations Handler */
+/* Flash Memory Operations Handler NOT USED */
 void FLASH_IRQHandler(void){
 	if(__HAL_FLASH_GET_FLAG(FLASH_FLAG_EOP) == SET) {
-		flashBusy = 0;
 		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP);
 	}
 }

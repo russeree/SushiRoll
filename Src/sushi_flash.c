@@ -5,28 +5,24 @@
  *      Author: Reese
  */
 
-/* Flashes Variables to the Sushi Board EEPROM PAGE */
+/**
+ *  Flashes Variables to the Sushi Board EEPROM PAGE: Does not use interupts, This is becuase it is un-neccesarry
+ **/
 
 #include "sushi_flash.h"
 
 extern void FLASH_PageErase(uint32_t PageAddress);
 
-volatile uint8_t flashBusy; //This is the flash busy status, can be checked by other interupts 0 = not busy 1 = busy
+extern volatile const uint32_t flashParameters; //This is the address Used
 
-void sushiFlashMemInit(void){
-	//Enable interupts for the flash operations timing
-	flashBusy = 0;
-	__HAL_FLASH_ENABLE_IT(FLASH_IT_EOP);
-	HAL_NVIC_SetPriority(FLASH_IRQn, 7, 0);
-	HAL_NVIC_EnableIRQ(FLASH_IRQn);
-}
 /*Reads a Page of Data, Then Overwrites the page with the new data in the modified locations*/
-void writeDataToPage(volatile const uint32_t* address, uint32_t *pageData){
-	flashBusy = 1; //Fash Memory is busy, only interupt may unlock it.
-	HAL_FLASH_Unlock();
-	HAL_FLASH_Program_IT(FLASH_TYPEPROGRAM_WORD, (uint32_t)address, (uint32_t)address);
-	while(flashBusy == 1){
-		HAL_Delay(1); //Give it a
-	}
+void writeDataToPage(void){
+	HAL_FLASH_Unlock(); //Unlock the flash memory for writing to 0xFF, The entie page must go;
+	FLASH_PageErase((uint32_t)&flashParameters); //Erase the page that all of the memory was initalized too
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tOn, (uint32_t)&flashParameters);                 //Being Writing the SushiState Structure to the device
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tOff, (uint32_t)&flashParameters + 4);            //Another Address and More Data
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tDelay, (uint32_t)&flashParameters + 8);          //...
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tPeriod, (uint32_t)&flashParameters + 12);        //...
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.inputMatching, (uint32_t)&flashParameters + 16);  //Finaly Write the Last bit of Data... The chip is free to go
 	HAL_FLASH_Lock();
 }

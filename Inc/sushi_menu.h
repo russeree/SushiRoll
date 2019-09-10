@@ -11,11 +11,13 @@
 #include "main.h" //Need to include this for the generalized sushi state construct
 #include "sushi_uart.h"
 #include "sushi_dma.h"
+#include "sushi_flash.h"
 
 
 extern SushiState sushiState;
 extern UART_HandleTypeDef sushiUART;
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
+extern void writeDataToPage(void);
 
 /* Messages and Menu Options Conrtol */
 void sushiMenuWelcome(void);

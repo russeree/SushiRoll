@@ -50,7 +50,6 @@ int main(void){
 	MX_GPIO_Init();
 	/* SUSHIBOARD PARAMETERS AND INIT */
 	getSushiParameters(); //Read out the Data in the Stored EEPROM in the RAM for Use;
-	sushiFlashMemInit();  //Now get the flash memory prepared for a giant write over;
 	/* Initialize the GATE DRIVERS*/
 	gateDriverParallelDMATimerInit();
 	gateDriveParallelPulseTimerInit();

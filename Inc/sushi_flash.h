@@ -13,7 +13,6 @@
 
 extern SushiState sushiState;
 
-void sushiFlashMemInit(void);
-void writeDataToPage(volatile const uint32_t* address, uint32_t *pageData);
+void writeDataToPage(void);
 
 #endif /* SUSHI_FLASH_H_ */

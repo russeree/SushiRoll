@@ -41,6 +41,7 @@ char sushiMenuInputPeriodText[]      = "Enter the signal period in uS\n\r";
 char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
 char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
 char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r";
+char sushiClearScreen[4]              = { 27 , '[' , '2' , 'J' };
 
 /* Variables used for the input data management */
 #define _INPUT_ARRAY_LEN 11        //Input Array Length
@@ -116,10 +117,12 @@ void sushiInputFetch(void){
 				sushiMenuState = 0;
 				break;
 			case 0x37:
+				writeDataToPage();
 				break;
 			default:{}
 		}
 	}
+	sushiMenuMultiUartDMATX(&sushiUART, &DMA_RX_Buffer[0], 1);
 }
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
@@ -153,6 +156,7 @@ void sushiMenuDisplay(void){
  */
 void sushiMenuWelcome(void){
 	sushiMenuStatePrevious = sushiMenuState;
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)&sushiClearScreen[1], 3);
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiAuthorText, sizeof(sushiAuthorText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuWelcomeText, sizeof(sushiMenuWelcomeText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuItemsText, sizeof(sushiMenuItemsText));
@@ -166,8 +170,5 @@ void sushiMenuWelcome(void){
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size){
 	HAL_UART_Transmit_DMA(huart, pData, Size);
 	dmaTXBusy = 1;
-	while(dmaTXBusy == 1){
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); //Toggle the state of pin PC9
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0); //Toggle the state of pin PC9;
-	}
+	while(dmaTXBusy == 1){}
 }
