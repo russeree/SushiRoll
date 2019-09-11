@@ -29,7 +29,7 @@ volatile uint8_t dmaTXBusy = 0; // 0 uartDMA RX IS NOT DONE
 
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
 
-/* SushiBoard Magic Text Values to be used by SushiOS*/
+/* SushiBoard Magic Text Values to be used by SushiOS !!!NOTE!!! If you are running out of space there would be optimization to be done here.*/
 char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
 char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0 - SELECT AN ITEM TO MODIFY\n\r";
 char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r\n\r";
@@ -40,13 +40,26 @@ char sushiMenuInputTDelayText[]      = "Enter the delay from the trigger in uS\n
 char sushiMenuInputPeriodText[]      = "Enter the signal period in uS\n\r";
 char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
 char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
-char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r";
-char sushiClearScreen[4]              = { 27 , '[' , '2' , 'J' };
+char sushiShowTonText[]              = "Ton Value is: ";
+char sushiShowToffText[]             = "Toff Value is: ";
+char sushiShowDelayText[]            = "Tdelay Value is: ";
+char sushiShowPeriodText[]           = "Tperiod Value is: ";
+char sushiShowInputMatchingText[]    = "Input Matching is: ";
+/* Other Misc text items used for formatting */
+char sushiTrueText[]                 = "True ";
+char sushiFlaseText[]                = "False ";
+char sushiNewLineReturn[]            = "\n\r";
+char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r"; //Saving changes to Sushiboard User Notificaion....
+char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
+
+
+
 
 /* Variables used for the input data management */
-#define _INPUT_ARRAY_LEN 11        //Input Array Length
-uint8_t inputArrayIDX;             //Keeps Track of the INDEX of Data Entry WHile Entering Data
-char inputArray[_INPUT_ARRAY_LEN]; //A 32 Bit number is at maximum 10 human readable digits long
+#define _INPUT_ARRAY_LEN 11         //Input Array Length
+uint8_t inputArrayIDX;              //Keeps Track of the INDEX of Data Entry WHile Entering Data
+char inputArray[_INPUT_ARRAY_LEN];  //A 32 Bit number is at maximum 10 human readable digits long
+char outputArray[_INPUT_ARRAY_LEN]; //ITOA output array
 
 /**
  * @desc: This is the input menu system that sushiboard will use for the
@@ -119,9 +132,22 @@ void sushiInputFetch(void){
 			case 0x37:
 				writeDataToPage();
 				break;
+			case 0x38:
+				sushiMenuShowState();
+				break;
 			default:{}
 		}
 	}
+}
+
+/**
+ * @desc: Prints out Sushiboards Paramaters stored in SRAM these are different than the valeus saved in EEPROM
+ **/
+void sushiMenuShowState(void){
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowTonText, sizeof(sushiShowTonText));
+	itoa(sushiState.tOn, outputArray, 10);
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)outputArray, sizeof(outputArray));
+
 }
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
