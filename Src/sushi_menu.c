@@ -42,8 +42,8 @@ char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Rememb
 char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
 char sushiShowTonText[]              = "Ton Value is: ";
 char sushiShowToffText[]             = "Toff Value is: ";
-char sushiShowDelayText[]            = "Tdelay Value is: ";
-char sushiShowPeriodText[]           = "Tperiod Value is: ";
+char sushiShowTdelayText[]            = "Tdelay Value is: ";
+char sushiShowTperiodText[]           = "Tperiod Value is: ";
 char sushiShowInputMatchingText[]    = "Input Matching is: ";
 /* Other Misc text items used for formatting */
 char sushiTrueText[]                 = "True ";
@@ -144,10 +144,20 @@ void sushiInputFetch(void){
  * @desc: Prints out Sushiboards Paramaters stored in SRAM these are different than the valeus saved in EEPROM
  **/
 void sushiMenuShowState(void){
-	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowTonText, sizeof(sushiShowTonText));
-	itoa(sushiState.tOn, outputArray, 10);
+	sushiMenuWriteVAR(sushiState.tOn, sushiShowTonText, sizeof(sushiShowTonText));
+	sushiMenuWriteVAR(sushiState.tOff, sushiShowToffText, sizeof(sushiShowToffText));
+	sushiMenuWriteVAR(sushiState.tDelay, sushiShowTdelayText, sizeof(sushiShowTdelayText));
+	sushiMenuWriteVAR(sushiState.tPeriod, sushiShowTperiodText, sizeof(sushiShowTperiodText));
+	/*Still Need to make a special function fot Tinput_matching */
+}
+/**
+ * @desc: Helper function to show parameters, this is used solely to optimize for size...
+ */
+void sushiMenuWriteVAR(uint32_t var, char* text, uint8_t len){
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)text, len);
+	itoa(var, outputArray, 10);
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)outputArray, sizeof(outputArray));
-
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 }
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
