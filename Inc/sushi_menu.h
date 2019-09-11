@@ -27,6 +27,7 @@ void sushiDisplayCursor(void);
 
 
 /* Handelers and Patches */
+void sushiMenuWriteVAR(uint32_t var, char* text, uint8_t len);
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
 void sushiInputFetch(void);
 void sushiWriteChangesToSRAM(void);
