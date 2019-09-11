@@ -19,10 +19,12 @@ extern UART_HandleTypeDef sushiUART;
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
 extern void writeDataToPage(void);
 
-/* Messages and Menu Options Conrtol */
+/* Messages and Menu Options */
 void sushiMenuWelcome(void);
 void sushiMenuDisplay(void);
+void sushiMenuShowState(void);
 void sushiDisplayCursor(void);
+
 
 /* Handelers and Patches */
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
