@@ -56,9 +56,6 @@ char sushiNewLineReturn[]            = "\n\r";
 char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r"; //Saving changes to Sushiboard User Notificaion....
 char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
 
-
-
-
 /* Variables used for the input data management */
 #define _INPUT_ARRAY_LEN 11         //Input Array Length
 uint8_t inputArrayIDX;              //Keeps Track of the INDEX of Data Entry WHile Entering Data

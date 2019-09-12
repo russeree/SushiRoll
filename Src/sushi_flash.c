@@ -19,6 +19,9 @@ extern volatile const uint32_t flashParameters; //This is the address Used
 void writeDataToPage(void){
 	HAL_FLASH_Unlock(); //Unlock the flash memory for writing to 0xFF, The entie page must go;
 	FLASH_PageErase((uint32_t)&flashParameters); //Erase the page that all of the memory was initalized too
+	HAL_FLASH_Lock();
+	HAL_Delay(1);
+	HAL_FLASH_Unlock();
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tOn, (uint32_t)&flashParameters);                 //Being Writing the SushiState Structure to the device
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tOff, (uint32_t)&flashParameters + 4);            //Another Address and More Data
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)sushiState.tDelay, (uint32_t)&flashParameters + 8);          //...
