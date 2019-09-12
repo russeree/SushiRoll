@@ -23,13 +23,9 @@ void writeDataToPage(void){
 	HAL_FLASH_Lock();
 	HAL_FLASH_Unlock();
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters, (uint32_t)sushiState.tOn);                 //Being Writing the SushiState Structure to the device
-	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG));
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 4, (uint32_t)sushiState.tOff);            //Another Address and More Data
-	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG));
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 8, (uint32_t)sushiState.tDelay);          //...
-	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG));
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 12, (uint32_t)sushiState.tPeriod);        //...
-	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG));
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 16, (uint32_t)sushiState.inputMatching);  //Finaly Write the Last bit of Data... The chip is free to go
 	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG));
 	HAL_FLASH_Lock();

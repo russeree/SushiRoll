@@ -44,11 +44,11 @@ char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Rememb
 char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
 char sushiShowTonText[]              = "Ton Value is: ";
 char sushiShowToffText[]             = "Toff Value is: ";
-char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r> ";
+char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r>";
 char sushiShowTdelayText[]           = "Tdelay Value is: ";
 char sushiShowTperiodText[]          = "Tperiod Value is: ";
 char sushiShowInputMatchingText[]    = "Input Matching is: ";
-char sushiSavingSRAMText[]           = "\n\r\n\r-> Saved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
+char sushiSavingSRAMText[]           = "\n\r> Saved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
 /* Other Misc text items used for formatting */
 char sushiTrueText[]                 = "True ";
 char sushiFlaseText[]                = "False ";
@@ -75,6 +75,7 @@ void sushiInputFetch(void){
 				sushiMenuDisplay();
 				inputArray[inputArrayIDX] = (char)'\0'; //Add Null Termination to the end of the string
 				sushiWriteChangesToSRAM();              //Use ATOI and the previous state to write the data to the variable and then return back to the home menu for more commands
+				inputArrayIDX = 0;
 				break;
 			}
 			default:{
@@ -164,6 +165,7 @@ void sushiMenuWriteVAR(uint32_t var, char* text, uint8_t len){
 	itoa(var, outputArray, 10);
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)outputArray, sizeof(outputArray));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
+	memset(&outputArray, 0x00, _INPUT_ARRAY_LEN);
 }
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
@@ -177,6 +179,7 @@ void sushiWriteChangesToSRAM(void){
 		case 5: sushiState.tPeriod = (uint32_t)inputValue; break; //Save the pulse duration variable
 		default: sushiMenuState = 0;
 	}
+	memset(&inputArray, 0x00, _INPUT_ARRAY_LEN);
 	sushiMenuState = 0; //Now that variables are stored into memory move back to the main menu system
 }
 /**

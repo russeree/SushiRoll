@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 #include "stdlib.h"
+#include "string.h"
 #include "stm32f0xx_hal.h"
 
 void Error_Handler(void);
