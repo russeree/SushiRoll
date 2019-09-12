@@ -31,7 +31,7 @@
 
 void SystemClock_Config(void);
 
-__attribute__((section(".user_eeprom"))) volatile const uint32_t flashParameters[10] = {
+__attribute__((section(".user_eeprom"))) const uint32_t flashParameters[10] = {
 		6,    //Time on
 		3,    //Time off
 		1000, //Period

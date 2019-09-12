@@ -26,7 +26,6 @@
 extern uint16_t safetyToggle;
 extern uint32_t swOn[1];
 extern uint32_t swOff[1];
-extern uint8_t  flashBusy; //Is there a flash operation ongoing
 
 extern UART_HandleTypeDef sushiUART;
 extern TIM_HandleTypeDef  pulseTimer1;
@@ -46,7 +45,6 @@ uint32_t CNTDR_PRV;
  * SYSTICK                           5 *
  * USART1_IRQHandler                 5 *
  * DMA1_Channel4_5_IRQHandler        6 *
- * FLASH_IRQHandler                  7 *
  */
 /******************************************************************************/
 /*           Cortex-M0 Processor Interruption and Exception Handlers          */ 
@@ -182,9 +180,6 @@ void DMA1_Channel4_5_IRQHandler(void)
 }
 /* Flash Memory Operations Handler NOT USED */
 void FLASH_IRQHandler(void){
-	if(__HAL_FLASH_GET_FLAG(FLASH_FLAG_EOP) == SET) {
-		__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP);
-	}
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
