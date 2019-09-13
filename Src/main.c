@@ -74,6 +74,7 @@ void getSushiParameters(void){
 	sushiState.tPeriod       = (uint32_t)flashParameters[2];
 	sushiState.tDelay        = (uint32_t)flashParameters[3];
 	sushiState.inputMatching = (uint32_t)flashParameters[4];
+	sushiState.tDebounce     = (uint32_t)flashParameters[5];
 }
 
 /**

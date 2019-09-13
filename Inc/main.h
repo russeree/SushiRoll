@@ -54,6 +54,7 @@ typedef struct SushiState{
 	int tPeriod;
 	int tDelay;
 	int inputMatching;
+	int tDebounce;
 } SushiState;
 
 void getSushiParameters(void);

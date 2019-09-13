@@ -158,7 +158,7 @@ void USART1_IRQHandler(void){
 	}
 	HAL_UART_IRQHandler(&sushiUART);
 }
-/*DMA CHannel4_5 UART HANDLER */
+/*DMA CHannel4_5 UART HANDLER - Enables the RX and TX handling*/
 extern void sushiInputFetch(void);
 
 void DMA1_Channel4_5_IRQHandler(void)
@@ -180,6 +180,7 @@ void DMA1_Channel4_5_IRQHandler(void)
 }
 /* Flash Memory Operations Handler NOT USED */
 void FLASH_IRQHandler(void){
+	//Fill This with info
 }
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

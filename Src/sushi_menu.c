@@ -51,6 +51,7 @@ char sushiShowInputMatchingText[]    = "Input Matching is: ";
 char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
 char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
 char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
+char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
 /* Other Misc text items used for formatting */
 char sushiTrueText[]                 = "True ";
 char sushiFlaseText[]                = "False ";
@@ -144,6 +145,12 @@ void sushiInputFetch(void){
 			case 0x38:
 				sushiMenuShowState();
 				break;
+			case 0x6D:
+				sushiMenuState = 1;
+				sushiMenuStatePrevious = 6;
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSetDeounceTimeText, sizeof(sushiSetDeounceTimeText));
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
+				break;
 			default:{
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInvalidCommandText, sizeof(sushiInvalidCommandText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
@@ -181,10 +188,12 @@ void sushiMenuWriteVAR(uint32_t var, char* text, uint8_t len){
 void sushiWriteChangesToSRAM(void){
 	int inputValue = atoi(inputArray); //Transfrom the char string the user input into an int.
 	switch(sushiMenuStatePrevious){ //Take the previous state before data entry began and use that
-		case 2: sushiState.tOn     = (uint32_t)inputValue; break; //Save the time on Variable
-		case 3: sushiState.tOff    = (uint32_t)inputValue; break; //Save the time off Variable
-		case 4: sushiState.tDelay  = (uint32_t)inputValue; break; //Save the time delay variable
-		case 5: sushiState.tPeriod = (uint32_t)inputValue; break; //Save the pulse duration variable
+		case 2: sushiState.tOn       = (uint32_t)inputValue; break; //Save the time on Variable
+		case 3: sushiState.tOff      = (uint32_t)inputValue; break; //Save the time off Variable
+		case 4: sushiState.tDelay    = (uint32_t)inputValue; break; //Save the time delay variable
+		case 5: sushiState.tPeriod   = (uint32_t)inputValue; break; //Save the pulse duration variable
+		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
+
 		default: sushiMenuState = 0;
 	}
 	memset(&inputArray, 0x00, _INPUT_ARRAY_LEN);
