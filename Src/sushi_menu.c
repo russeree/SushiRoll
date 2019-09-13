@@ -50,7 +50,7 @@ char sushiShowTperiodText[]          = "Tperiod Value is: ";
 char sushiShowInputMatchingText[]    = "Input Matching is: ";
 char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
 char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
-char sushInvalidCommandText[]        = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
+char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
 /* Other Misc text items used for formatting */
 char sushiTrueText[]                 = "True ";
 char sushiFlaseText[]                = "False ";
@@ -145,7 +145,7 @@ void sushiInputFetch(void){
 				sushiMenuShowState();
 				break;
 			default:{
-				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushInvalidCommandText, sizeof(sushInvalidCommandText));
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInvalidCommandText, sizeof(sushiInvalidCommandText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
 			}

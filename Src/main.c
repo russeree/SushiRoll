@@ -31,6 +31,8 @@
 
 void SystemClock_Config(void);
 
+char sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
+
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on
 		3,    //Time off
@@ -47,17 +49,18 @@ int main(void){
 	/* HAL Inits */
 	HAL_Init();
 	SystemClock_Config();
-	MX_GPIO_Init();
 	/* SUSHIBOARD PARAMETERS AND INIT */
 	getSushiParameters(); //Read out the Data in the Stored EEPROM in the RAM for Use;
-	/* Initialize the GATE DRIVERS*/
+	/* Initialize the GATE DRIVERS and IO*/
+	MX_GPIO_Init();
 	gateDriverParallelDMATimerInit();
 	gateDriveParallelPulseTimerInit();
 	switchInputDebouceTimerInit(5);
 	/* Initialize the UART MENU SYSTEM */
 	sushiBoardUARTDMAInit();
 	initSushiBoardUART();
-	/* Main Loop: This shoudl be near empty */
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
+	/* Main Loop: No Code all Interupt Driven*/
 	while (1){
 	}
 }

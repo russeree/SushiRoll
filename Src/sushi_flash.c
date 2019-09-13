@@ -15,7 +15,7 @@ extern void FLASH_PageErase(uint32_t PageAddress);
 
 extern volatile uint32_t flashParameters; //This is the address Used
 
-/*Reads a Page of Data, Then Overwrites the page with the new data in the modified locations*/
+/*Reads a Page of Data, Then Overwrites the page with the new data in the modified locations BLOCKING*/
 void writeDataToPage(void){
 	HAL_FLASH_Unlock(); //Unlock the flash memory for writing to 0xFF, The entie page must go;
 	FLASH_PageErase((uint32_t)&flashParameters); //Erase the page that all of the memory was initalized too
