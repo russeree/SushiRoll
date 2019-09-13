@@ -48,7 +48,8 @@ char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2
 char sushiShowTdelayText[]           = "Tdelay Value is: ";
 char sushiShowTperiodText[]          = "Tperiod Value is: ";
 char sushiShowInputMatchingText[]    = "Input Matching is: ";
-char sushiSavingSRAMText[]           = "\n\r> Saved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
+char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
+char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
 /* Other Misc text items used for formatting */
 char sushiTrueText[]                 = "True ";
 char sushiFlaseText[]                = "False ";
@@ -74,8 +75,8 @@ void sushiInputFetch(void){
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingSRAMText, sizeof(sushiSavingSRAMText)); //Let the user know that changes were saved.
 				sushiMenuDisplay();
 				inputArray[inputArrayIDX] = (char)'\0'; //Add Null Termination to the end of the string
-				sushiWriteChangesToSRAM();              //Use ATOI and the previous state to write the data to the variable and then return back to the home menu for more commands
 				inputArrayIDX = 0;
+				sushiWriteChangesToSRAM();              //Use ATOI and the previous state to write the data to the variable and then return back to the home menu for more commands
 				break;
 			}
 			default:{
@@ -136,6 +137,8 @@ void sushiInputFetch(void){
 				break;
 			case 0x37:
 				writeDataToPage();
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingToEEPROMText, sizeof(sushiSavingToEEPROMText));
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
 			case 0x38:
 				sushiMenuShowState();
@@ -193,7 +196,8 @@ void sushiDisplayCursor(void){
  * @desc: VIA Semiblocking DMA UART, Send over the menu contents to the user
  */
 void sushiMenuDisplay(void){
-	HAL_UART_Transmit_DMA(&sushiUART, (uint8_t*)sushiMenuItemsText, sizeof(sushiMenuItemsText));
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuItemsText, sizeof(sushiMenuItemsText));
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 }
 /**
  * @desc: Displays the Full Welcome Screen with Details of Device, Including Verzion

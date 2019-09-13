@@ -31,7 +31,7 @@
 
 void SystemClock_Config(void);
 
-__attribute__((section(".user_eeprom"))) const uint32_t flashParameters[10] = {
+__attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on
 		3,    //Time off
 		1000, //Period
@@ -59,7 +59,6 @@ int main(void){
 	initSushiBoardUART();
 	/* Main Loop: This shoudl be near empty */
 	while (1){
-		HAL_Delay(500);
 	}
 }
 
@@ -67,11 +66,11 @@ int main(void){
  * @desc: Read from eeprom Sushiboards Configuration Patterns
  */
 void getSushiParameters(void){
-	sushiState.tOn           = flashParameters[0];
-	sushiState.tOff          = flashParameters[1];
-	sushiState.tPeriod       = flashParameters[2];
-	sushiState.tDelay        = flashParameters[3];
-	sushiState.inputMatching = flashParameters[4];
+	sushiState.tOn           = (uint32_t)flashParameters[0];
+	sushiState.tOff          = (uint32_t)flashParameters[1];
+	sushiState.tPeriod       = (uint32_t)flashParameters[2];
+	sushiState.tDelay        = (uint32_t)flashParameters[3];
+	sushiState.inputMatching = (uint32_t)flashParameters[4];
 }
 
 /**

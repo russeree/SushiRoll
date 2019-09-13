@@ -13,7 +13,7 @@
 
 extern void FLASH_PageErase(uint32_t PageAddress);
 
-extern const uint32_t flashParameters; //This is the address Used
+extern volatile uint32_t flashParameters; //This is the address Used
 
 /*Reads a Page of Data, Then Overwrites the page with the new data in the modified locations*/
 void writeDataToPage(void){
