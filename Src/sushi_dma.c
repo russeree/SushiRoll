@@ -16,10 +16,10 @@ uint8_t DMA_TX_Buffer[UART_BUFFER_SIZE];
 /**
  * @desc: Setups the DMA transfer for pulsing the timer from a Value in Memeory
  */
-uint32_t swOn[1]  = {0x001B};
-uint32_t swOff[1] = {0x001B << 16};
+uint32_t swOn[1]  = {0x001B};       //For use by DMA to push this onto the BSSR registers gpio A0,1,3,4 are on
+uint32_t swOff[1] = {0x001B << 16}; //For use by DMA to push this onto the BSSR registers gpio A0,1,3,4 are off
 
-extern UART_HandleTypeDef sushiUART;
+extern UART_HandleTypeDef sushiUART; //External instance of UART to link to the  DMA channels 4/5
 
 // DMA Timer Initialize
 void gateDriverParallelDMATimerInit(void){
@@ -49,8 +49,8 @@ void gateDriverParallelDMATimerInit(void){
 	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
 	HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);   // Moves the Source Address Of IO that is high to the PIN
 	HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1); // Moves the Source Address Of IO that is high to the PIN
-	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0);
-	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0); //Second highest priority  level.
+	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn); //Now enable the Interupt
 }
 
 /* This is the DMA interupt configuration for sushiboard UART TX and RX*/
