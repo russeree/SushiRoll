@@ -13,7 +13,6 @@
 #include "sushi_dma.h"
 #include "sushi_flash.h"
 
-
 extern SushiState sushiState;
 extern UART_HandleTypeDef sushiUART;
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
@@ -24,7 +23,6 @@ void sushiMenuWelcome(void);
 void sushiMenuDisplay(void);
 void sushiMenuShowState(void);
 void sushiDisplayCursor(void);
-
 
 /* Handelers and Patches */
 void sushiMenuWriteVAR(uint32_t var, const char* text, uint8_t len);

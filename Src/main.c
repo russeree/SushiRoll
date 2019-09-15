@@ -61,8 +61,9 @@ int main(void){
 	initSushiBoardUART();
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
 	/* Main Loop: No Code all Interupt Driven*/
-	while (1){
-	}
+	for(;;){
+		/* The code you are looking for is in another castle */
+ 	}
 }
 
 /**

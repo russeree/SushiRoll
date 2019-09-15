@@ -48,7 +48,7 @@ clean:
 post-build:
 	-@echo 'Generating hex and Printing size information:'
 	arm-none-eabi-objcopy -O ihex "SushiRoll.elf" "SushiRoll.hex"
-	arm-none-eabi-size "SushiRoll.elf"
+	arm-none-eabi-size "SushiRoll.elf" --format=sysv
 	-@echo ' '
 
 .PHONY: all clean dependents

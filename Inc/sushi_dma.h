@@ -11,7 +11,7 @@
 #include "stm32f0xx_hal.h"
 
 #define DMA_RX_BUFFER_SIZE 1
-#define UART_BUFFER_SIZE 256
+#define UART_BUFFER_SIZE 255
 
 //Prototypes
 void gateDriverParallelDMATimerInit(void); //Enabled a single shot DMA in Normal Mode: Non Circular

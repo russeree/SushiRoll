@@ -44,7 +44,7 @@ const char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. 
 const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
 const char sushiShowTonText[]              = "Ton Value is: ";
 const char sushiShowToffText[]             = "Toff Value is: ";
-const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r";
+const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r[t] Trigger Sushiboard.\n\r";
 const char sushiShowTdelayText[]           = "Tdelay Value is: ";
 const char sushiShowTperiodText[]          = "Tperiod Value is: ";
 const char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
@@ -54,6 +54,7 @@ const char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
 const char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
 const char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
 const char sushiMaxInputLenText[]          = " -> !!!MAX INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
+const char sushiTriggerExeText[]           = "Trigger successful.";
 /* Other Misc text items used for formatting */
 const char sushiTrueText[]                 = "True ";
 const char sushiFlaseText[]                = "False ";
@@ -156,6 +157,13 @@ void sushiInputFetch(void){
 				sushiMenuStatePrevious = 6;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSetDeounceTimeText, sizeof(sushiSetDeounceTimeText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
+				break;
+			case 0x74: //Save the state of the debounce timing.
+				sushiMenuState = 0;
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTriggerExeText, sizeof(sushiTriggerExeText));
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
+				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
+				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
 				break;
 			default:{
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInvalidCommandText, sizeof(sushiInvalidCommandText));

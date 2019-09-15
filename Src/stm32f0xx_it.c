@@ -118,7 +118,6 @@ void EXTI0_1_IRQHandler(void){
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 }
-
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
 	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){
