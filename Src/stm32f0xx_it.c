@@ -116,7 +116,6 @@ void EXTI0_1_IRQHandler(void){
 		HAL_TIM_Base_Start(&pulseTimer1);          //Fire up the timer for the Pulse
 	}
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 }
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){

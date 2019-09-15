@@ -54,7 +54,7 @@ const char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
 const char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
 const char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
 const char sushiMaxInputLenText[]          = " -> !!!MAX INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
-const char sushiTriggerExeText[]           = "Trigger successful.";
+const char sushiTriggerExeText[]           = "\n\rTrigger successful.\n\r";
 /* Other Misc text items used for formatting */
 const char sushiTrueText[]                 = "True ";
 const char sushiFlaseText[]                = "False ";
