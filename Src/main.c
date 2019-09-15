@@ -31,7 +31,7 @@
 
 void SystemClock_Config(void);
 
-char sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
+char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on

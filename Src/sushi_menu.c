@@ -33,32 +33,33 @@ extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE]; //Receviving Buffer
  */
 
 /* SushiBoard Magic Text Values to be used by SushiOS !!!NOTE!!! If you are running out of space there would be optimization to be done here.*/
-char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
-char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0 - SELECT AN ITEM TO MODIFY\n\r";
-char sushiMenuInputCursor[]          = "> ";
-char sushiMenuInputTonText[]         = "\n\rEnter the maximum pulse time on in uS\n\r";
-char sushiMenuInputToffText[]        = "\n\rEnter the minimum pulse time off in uS\n\r";
-char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from the trigger in uS\n\r";
-char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
-char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
-char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
-char sushiShowTonText[]              = "Ton Value is: ";
-char sushiShowToffText[]             = "Toff Value is: ";
-char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r";
-char sushiShowTdelayText[]           = "Tdelay Value is: ";
-char sushiShowTperiodText[]          = "Tperiod Value is: ";
-char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
-char sushiShowInputMatchingText[]    = "Input Matching is: ";
-char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
-char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
-char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
-char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
+const char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
+const char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0 - SELECT AN ITEM TO MODIFY\n\r";
+const char sushiMenuInputCursor[]          = "> ";
+const char sushiMenuInputTonText[]         = "\n\rEnter the maximum pulse time on in uS\n\r";
+const char sushiMenuInputToffText[]        = "\n\rEnter the minimum pulse time off in uS\n\r";
+const char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from the trigger in uS\n\r";
+const char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
+const char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
+const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
+const char sushiShowTonText[]              = "Ton Value is: ";
+const char sushiShowToffText[]             = "Toff Value is: ";
+const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r";
+const char sushiShowTdelayText[]           = "Tdelay Value is: ";
+const char sushiShowTperiodText[]          = "Tperiod Value is: ";
+const char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
+const char sushiShowInputMatchingText[]    = "Input Matching is: ";
+const char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
+const char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
+const char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
+const char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
+const char sushiMaxInputLenText[]          = " -> !!!MAX INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
 /* Other Misc text items used for formatting */
-char sushiTrueText[]                 = "True ";
-char sushiFlaseText[]                = "False ";
-char sushiNewLineReturn[]            = "\n\r";
-char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r"; //Saving changes to Sushiboard User Notificaion....
-char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
+const char sushiTrueText[]                 = "True ";
+const char sushiFlaseText[]                = "False ";
+const char sushiNewLineReturn[]            = "\n\r";
+const char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r"; //Saving changes to Sushiboard User Notificaion....
+const char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
 
 /* Variables used for the input data management */
 #define _INPUT_ARRAY_LEN 11         //Input Array Length
@@ -73,6 +74,10 @@ void sushiInputFetch(void){
 	/* This Section is for the input processing */
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)DMA_RX_Buffer, 1); //This is used to return the users input back to them.
 	if(sushiMenuState == 1){                            //This is the Data input state
+		if (inputArrayIDX == 10){
+			DMA_RX_Buffer[0] = 0x0D;
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMaxInputLenText, sizeof(sushiMaxInputLenText)); //Let the user know that their value has been entered becuase of the max size limit
+		}
 		switch(DMA_RX_Buffer[0]){                       //Check what charicter was pressed !!!FIX ME!!! When you enter this state UNDERSTAND WHICH TRANSACTION IS BERING PROCESSED
 			case 0x0D:{                                 //If the user Presses Enter Then the input array is done and begin processing the input array
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingSRAMText, sizeof(sushiSavingSRAMText)); //Let the user know that changes were saved.
@@ -177,7 +182,7 @@ void sushiMenuShowState(void){
 /**
  * @desc: Helper function to show parameters, this is used solely to optimize for size...
  */
-void sushiMenuWriteVAR(uint32_t var, char* text, uint8_t len){
+void sushiMenuWriteVAR(uint32_t var, const char* text, uint8_t len){
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)text, len);
 	itoa(var, outputArray, 10);
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)outputArray, sizeof(outputArray));
