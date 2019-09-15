@@ -47,6 +47,7 @@ char sushiShowToffText[]             = "Toff Value is: ";
 char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r";
 char sushiShowTdelayText[]           = "Tdelay Value is: ";
 char sushiShowTperiodText[]          = "Tperiod Value is: ";
+char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
 char sushiShowInputMatchingText[]    = "Input Matching is: ";
 char sushiSavingSRAMText[]           = "\n\rSaved variable to SRAM - To preserve changes, press '7' to save to EEPROM\n\r";
 char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
@@ -169,6 +170,7 @@ void sushiMenuShowState(void){
 	sushiMenuWriteVAR(sushiState.tOff, sushiShowToffText, sizeof(sushiShowToffText));
 	sushiMenuWriteVAR(sushiState.tDelay, sushiShowTdelayText, sizeof(sushiShowTdelayText));
 	sushiMenuWriteVAR(sushiState.tPeriod, sushiShowTperiodText, sizeof(sushiShowTperiodText));
+	sushiMenuWriteVAR(sushiState.tDebounce, sushiShowTdebounceText, sizeof(sushiShowTdebounceText)); //Displays the debouncing text
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 	/*Still Need to make a special function fot Tinput_matching */
 }
@@ -193,7 +195,6 @@ void sushiWriteChangesToSRAM(void){
 		case 4: sushiState.tDelay    = (uint32_t)inputValue; break; //Save the time delay variable
 		case 5: sushiState.tPeriod   = (uint32_t)inputValue; break; //Save the pulse duration variable
 		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
-
 		default: sushiMenuState = 0;
 	}
 	memset(&inputArray, 0x00, _INPUT_ARRAY_LEN);

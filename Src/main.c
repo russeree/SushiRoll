@@ -39,7 +39,7 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] =
 		1000, //Period
 		100,  //Delay
 		0,    //Do Not Match Inputs
-		0,0,0,0,0 //these are not used
+		5,0,0,0,0 //these are not used
 };
 
 SushiState sushiState;
@@ -55,7 +55,7 @@ int main(void){
 	MX_GPIO_Init();
 	gateDriverParallelDMATimerInit();
 	gateDriveParallelPulseTimerInit();
-	switchInputDebouceTimerInit(5);
+	switchInputDebouceTimerInit(sushiState.tDebounce);
 	/* Initialize the UART MENU SYSTEM */
 	sushiBoardUARTDMAInit();
 	initSushiBoardUART();
