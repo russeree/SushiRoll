@@ -35,7 +35,7 @@ char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on
-		3,    //Time off
+		10,  //Time off
 		1000, //Period
 		100,  //Delay
 		0,    //Do Not Match Inputs

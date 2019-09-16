@@ -33,7 +33,10 @@ extern TIM_HandleTypeDef  debounceTimer1;
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
+
 extern volatile uint8_t   dmaTXBusy;
+
+extern void sushiInputFetch(void);
 uint32_t CNTDR_PRV;
 
 /**
@@ -108,8 +111,8 @@ void SysTick_Handler(void){
 void EXTI0_1_IRQHandler(void){
 	if(safetyToggle == 0){
 		safetyToggle = 1;
-		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop Timer 1
-		HAL_TIM_Base_Stop(&debounceTimer1);        //Stop Timer 14
+		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop Timer 1 - Pulse Train Generator
+		HAL_TIM_Base_Stop(&debounceTimer1);        //Stop Timer 14 - The Debounce Timer
 		__HAL_TIM_SET_COUNTER(&pulseTimer1,0);     //Reset the timer count
 		__HAL_TIM_SET_COUNTER(&debounceTimer1,0);  //Reset the timer count start fresh on the trigger
 		HAL_TIM_Base_Start(&debounceTimer1);       //Fire up the debounce time
@@ -119,7 +122,7 @@ void EXTI0_1_IRQHandler(void){
 }
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
-	if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){
+	if(1){
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
 		//I Dont know why I have to do this sequence to prevent a bounce high after the trigger
@@ -131,17 +134,17 @@ void TIM14_IRQHandler(void){
 		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
 		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
 		__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
-		HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);   // Moves the Source Address Of IO that is high to the PIN
+		HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);     // Moves the Source Address Of IO that is high to the PIN
 		HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1);
-		HAL_TIM_Base_Stop(&debounceTimer1);       //Fire up the debounce time
+		HAL_TIM_Base_Stop(&debounceTimer1);        //Fire up the debounce time
 	}
 	HAL_TIM_IRQHandler(&debounceTimer1);
 }
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
-	safetyToggle = 0;
-	HAL_TIM_Base_Stop(&pulseTimer1);
-	HAL_TIM_IRQHandler(&pulseTimer1);
+	safetyToggle = 0;                   //Turn off the 'double-tap' safety
+	HAL_TIM_Base_Stop(&pulseTimer1);    //Stop the timer
+	HAL_TIM_IRQHandler(&pulseTimer1);   //Handle the interupt
 }
 
 /* DMA UPDATE HANDLER -UNUSED ON SUSHI BOARD- */
@@ -157,7 +160,7 @@ void USART1_IRQHandler(void){
 	HAL_UART_IRQHandler(&sushiUART);
 }
 /*DMA CHannel4_5 UART HANDLER - Enables the RX and TX handling*/
-extern void sushiInputFetch(void);
+
 
 void DMA1_Channel4_5_IRQHandler(void)
 {

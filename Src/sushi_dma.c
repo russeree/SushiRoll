@@ -47,8 +47,6 @@ void gateDriverParallelDMATimerInit(void){
 	HAL_DMA_Init(&pulseGenOnDMATimer);    //Init with the DMA Update.....
 	HAL_DMA_DeInit(&pulseGenOffDMATimer); //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
-	HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);   // Moves the Source Address Of IO that is high to the PIN
-	HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1); // Moves the Source Address Of IO that is high to the PIN
 	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0); //Second highest priority  level.
 	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn); //Now enable the Interupt
 }

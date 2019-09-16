@@ -50,14 +50,12 @@ void gateDriveParallelPulseTimerInit(void){                                 // 1
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC2);                    //Capture Compare 2 Event (User event, This may not be used)
 	//sET THE INTERUPT ROUTINE PRIORITY
 	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
-	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //More interupts
+	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
 	HAL_TIM_Base_Start(&pulseTimer1);                                   //Start the Time Base Tracker
-	HAL_TIM_PWM_Start(&pulseTimer1, TIM_CHANNEL_1);                     //Start the PWM1 Channel 1 Timer 1
-	HAL_TIM_PWM_Start(&pulseTimer1, TIM_CHANNEL_2);                     //Start the PWM1 Channel 2 Timer 2
 }
 
 /**
