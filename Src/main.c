@@ -77,8 +77,8 @@ int main(void){
 void getSushiParameters(void){
 	sushiState.tOn           = (uint32_t)flashParameters[0];
 	sushiState.tOff          = (uint32_t)flashParameters[1];
-	sushiState.tPeriod       = (uint32_t)flashParameters[2];
-	sushiState.tDelay        = (uint32_t)flashParameters[3];
+	sushiState.tDelay        = (uint32_t)flashParameters[2];
+	sushiState.tPeriod       = (uint32_t)flashParameters[3]; //FIXED - SWAPED Period and Delay on Boot
 	sushiState.inputMatching = (uint32_t)flashParameters[4];
 	sushiState.tDebounce     = (uint32_t)flashParameters[5];
 }
