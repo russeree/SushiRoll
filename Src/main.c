@@ -29,6 +29,11 @@
 #include "sushi_menu.h"  //Sushi Board OS
 #include "sushi_flash.h" //Sushi Board Flash Memory Interface
 
+/**
+ * @Bugs to Fix
+ * 1. Tigger fire on device power up
+ * 2. When Saving State Period and Delay are swapped
+ */
 void SystemClock_Config(void);
 
 char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
