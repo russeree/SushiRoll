@@ -13,7 +13,6 @@ C_SRCS += \
 ../Src/sushi_menu.c \
 ../Src/sushi_timer.c \
 ../Src/sushi_uart.c \
-../Src/syscalls.c \
 ../Src/system_stm32f0xx.c 
 
 OBJS += \
@@ -26,7 +25,6 @@ OBJS += \
 ./Src/sushi_menu.o \
 ./Src/sushi_timer.o \
 ./Src/sushi_uart.o \
-./Src/syscalls.o \
 ./Src/system_stm32f0xx.o 
 
 C_DEPS += \
@@ -39,7 +37,6 @@ C_DEPS += \
 ./Src/sushi_menu.d \
 ./Src/sushi_timer.d \
 ./Src/sushi_uart.d \
-./Src/syscalls.d \
 ./Src/system_stm32f0xx.d 
 
 

@@ -54,8 +54,7 @@ void gateDriveParallelPulseTimerInit(void){                                 // 1
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
-	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
-	HAL_TIM_Base_Start(&pulseTimer1);                                   //Start the Time Base Tracker
+	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare                                   //Start the Time Base Tracker
 }
 
 /**

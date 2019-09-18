@@ -64,6 +64,6 @@
 "Src/sushi_menu.o"
 "Src/sushi_timer.o"
 "Src/sushi_uart.o"
-"Src/syscalls.o"
 "Src/system_stm32f0xx.o"
 "startup/startup_stm32f038xx.o"
+"startup/syscalls.o"
