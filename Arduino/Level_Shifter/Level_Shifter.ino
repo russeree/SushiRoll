@@ -22,6 +22,10 @@ void loop() {
 void receiveEvent(int howMany){
   while (Wire.available()) { // loop through all but the last
     uint8_t c = Wire.read(); // receive byte as a character
+    digitalWrite(ledPin, HIGH);
+    digitalWrite(outPin, HIGH);
     delay(c);
+    digitalWrite(ledPin, LOW);
+    digitalWrite(outPin, LOW);
   }
 }
