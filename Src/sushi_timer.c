@@ -17,7 +17,7 @@ TIM_OC_InitTypeDef tcOn;                                               // Timer 
 TIM_OC_InitTypeDef tcOff;                                              // Timer or the On Pulse
 
 /**
- * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO regs
+ * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
  */
 void gateDriveParallelPulseTimerInit(void){                                 // 10ms Period
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
