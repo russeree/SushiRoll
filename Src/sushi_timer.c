@@ -71,7 +71,7 @@ void gateDriveParallelPulseTimerInit(void){                             // 10ms 
  */
 
 void switchInputDebouceTimerInit(uint16_t timeMS){
-	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
+	uint16_t usPrescaler = (SystemCoreClock / 1000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enable the Clock for timer 14
 	__HAL_RCC_TIM14_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
 	debounceTimer1.Instance = TIM14;                                        //Timer 14 will be used
@@ -79,7 +79,7 @@ void switchInputDebouceTimerInit(uint16_t timeMS){
 	debounceTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
 	debounceTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
 	debounceTimer1.Init.Prescaler         = usPrescaler;                    //1us tick
-	debounceTimer1.Init.Period            = 1000 * timeMS;                  //1ms Period * Debounce time
+	debounceTimer1.Init.Period            = timeMS;                         //1ms Period * Debounce time
 	//Setup the output channel
 	HAL_TIM_PWM_Init(&debounceTimer1);                                      //Init the Timer but do no start the timer!
 	//Enable the output interupts for this timer,
@@ -88,11 +88,14 @@ void switchInputDebouceTimerInit(uint16_t timeMS){
 	HAL_NVIC_EnableIRQ(TIM14_IRQn);
 }
 
+/**
+ * @desc: This timer is used to keep track of the running timer.
+ */
 void signalGenCounter(uint16_t timeMS){
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enable the Clock for timer 14
-	__HAL_RCC_TIM14_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
-	debounceTimer1.Instance = TIM14;                                        //Timer 14 will be used
+	__HAL_RCC_TIM16_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
+	debounceTimer1.Instance = TIM16;                                        //Timer 14 will be used
 	debounceTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shawdow register on the next UE
 	debounceTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
 	debounceTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
