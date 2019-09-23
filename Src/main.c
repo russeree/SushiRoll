@@ -47,6 +47,7 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] =
 };
 
 SushiState sushiState;
+volatile uint8_t sigMode;
 
 int main(void){
 	HAL_NVIC_SetPriority(SysTick_IRQn, 5, 0); //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be gaureenteed

@@ -34,6 +34,7 @@ extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
 
+extern volatile uint8_t   sigMode;
 extern volatile uint8_t   dmaTXBusy;
 
 extern void sushiInputFetch(void);
