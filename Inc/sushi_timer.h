@@ -11,7 +11,9 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
-void gateDriveParallelPulseTimerInit(void);       //Init a timer designed to trigger all MOSFETs at one time.
-void switchInputDebouceTimerInit(uint16_t timeMS); //This time controls the deboucing timer.
+void signalGenCounter(uint16_t timeMS);            // Determines the time to repeat the signal... for longer runs
+void changeTimeBase(uint16_t scaler);              // Changes the Tamebase for the primary signal counter
+void gateDriveParallelPulseTimerInit(void);        // Init a timer designed to trigger all MOSFETs at one time.
+void switchInputDebouceTimerInit(uint16_t timeMS); // This time controls the deboucing timer.
 
 #endif /* SUSHI_TIMER_H_ */

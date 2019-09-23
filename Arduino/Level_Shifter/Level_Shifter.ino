@@ -24,7 +24,7 @@ void receiveEvent(int howMany){
     uint8_t c = Wire.read(); // receive byte as a character
     digitalWrite(ledPin, HIGH);
     digitalWrite(outPin, HIGH);
-    delay(c);
+    delay(35);
     digitalWrite(ledPin, LOW);
     digitalWrite(outPin, LOW);
   }

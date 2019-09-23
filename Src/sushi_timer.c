@@ -18,8 +18,16 @@ TIM_OC_InitTypeDef tcOff;                                              // Timer 
 
 /**
  * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
+ * @Note: Without Adjusting period.... due to the fact the timer is limited to 16 bits 65535us or 65.535ms Max Pulse Length.
  */
-void gateDriveParallelPulseTimerInit(void){                                 // 10ms Period
+
+/**
+ * @desc: Changes the timebase of timer 1 - Note must enabled timed and serial pulses
+ **/
+void changeTimeBase(uint16_t scaler){
+}
+
+void gateDriveParallelPulseTimerInit(void){                             // 10ms Period
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal
 	__HAL_RCC_TIM1_CLK_ENABLE();
@@ -63,6 +71,24 @@ void gateDriveParallelPulseTimerInit(void){                                 // 1
  */
 
 void switchInputDebouceTimerInit(uint16_t timeMS){
+	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
+	//Enable the Clock for timer 14
+	__HAL_RCC_TIM14_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
+	debounceTimer1.Instance = TIM14;                                        //Timer 14 will be used
+	debounceTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shawdow register on the next UE
+	debounceTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
+	debounceTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
+	debounceTimer1.Init.Prescaler         = usPrescaler;                    //1us tick
+	debounceTimer1.Init.Period            = 1000 * timeMS;                  //1ms Period * Debounce time
+	//Setup the output channel
+	HAL_TIM_PWM_Init(&debounceTimer1);                                      //Init the Timer but do no start the timer!
+	//Enable the output interupts for this timer,
+	__HAL_TIM_ENABLE_IT(&debounceTimer1,TIM_IT_UPDATE);
+	HAL_NVIC_SetPriority(TIM14_IRQn, 4, 0);
+	HAL_NVIC_EnableIRQ(TIM14_IRQn);
+}
+
+void signalGenCounter(uint16_t timeMS){
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enable the Clock for timer 14
 	__HAL_RCC_TIM14_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
