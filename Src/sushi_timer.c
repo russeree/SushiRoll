@@ -8,11 +8,13 @@
 
 #include "sushi_timer.h"
 
+extern volatile uint8_t sigMode;                                       // The signal timebase mode
 extern SushiState sushiState;
-uint8_t safetyToggle;
 
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
 TIM_HandleTypeDef debounceTimer1;                                      // TimeBase Structure
+TIM_HandleTypeDef sigGenTimer1;                                        // Signal Generation Timer / Counter
+
 TIM_OC_InitTypeDef tcOn;                                               // Timer or the On Pulse
 TIM_OC_InitTypeDef tcOff;                                              // Timer or the On Pulse
 
@@ -89,22 +91,22 @@ void switchInputDebouceTimerInit(uint16_t timeMS){
 }
 
 /**
- * @desc: This timer is used to keep track of the running timer.
+ * @desc: This timer is used to keep track of a timed repition of events AKA run for this ammount of time;
  */
-void signalGenCounter(uint16_t timeMS){
+void signalGenCounter(uint16_t units){
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enable the Clock for timer 14
-	__HAL_RCC_TIM16_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
-	debounceTimer1.Instance = TIM16;                                        //Timer 14 will be used
-	debounceTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shawdow register on the next UE
-	debounceTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
-	debounceTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
-	debounceTimer1.Init.Prescaler         = usPrescaler;                    //1us tick
-	debounceTimer1.Init.Period            = 1000 * timeMS;                  //1ms Period * Debounce time
+	__HAL_RCC_TIM16_CLK_ENABLE();                                         //Number of cycles to generate 1m_pulses/sec
+	sigGenTimer1.Instance = TIM16;                                        //Timer 16 will be used
+	sigGenTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shadow register on the next UE
+	sigGenTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
+	sigGenTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
+	sigGenTimer1.Init.Prescaler         = usPrescaler;                    //1us tick
+	sigGenTimer1.Init.Period            = 1000 * units;                   //1ms Period * Debounce time
 	//Setup the output channel
-	HAL_TIM_PWM_Init(&debounceTimer1);                                      //Init the Timer but do no start the timer!
+	HAL_TIM_PWM_Init(&sigGenTimer1);                                      //Init the Timer but do no start the timer!
 	//Enable the output interupts for this timer,
-	__HAL_TIM_ENABLE_IT(&debounceTimer1,TIM_IT_UPDATE);
-	HAL_NVIC_SetPriority(TIM14_IRQn, 4, 0);
-	HAL_NVIC_EnableIRQ(TIM14_IRQn);
+	__HAL_TIM_ENABLE_IT(&sigGenTimer1,TIM_IT_UPDATE);
+	HAL_NVIC_SetPriority(TIM16_IRQn, 4, 1);
+	HAL_NVIC_EnableIRQ(TIM16_IRQn);
 }

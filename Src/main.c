@@ -39,15 +39,20 @@ char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on
-		10,  //Time off
+		10,   //Time off
 		1000, //Period
 		100,  //Delay
 		0,    //Do Not Match Inputs
-		5,0,0,0,0 //these are not used
+		5,    //5ms Debounce - Cherry MX Blues spec
+		0,
+		0,
+		0,
+		0     //these are not used
 };
 
 SushiState sushiState;
-volatile uint8_t sigMode;
+volatile uint8_t sigMode;         //Signal Modes 0 = Manual Tigger, 1 = Continious, 2 = run for a certain number of cycles;
+volatile uint32_t sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 int main(void){
 	HAL_NVIC_SetPriority(SysTick_IRQn, 5, 0); //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be gaureenteed
@@ -66,13 +71,22 @@ int main(void){
 	initSushiBoardUART();
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
 	/* Main Loop: No Code all Interupt Driven*/
-	for(;;){
-		/* The code you are looking for is in another castle */
- 	}
+	if (sushiState.inputMatching == 0x01){ // If you are matching inputs then just take the input pin and
+		HAL_NVIC_DisableIRQ(EXTI0_1_IRQn); // Turn off the IRQ we dont need any timer intervention here
+		for(;;){                           // Now you just match the Inputs until the device reboots. INFINATE LOOP
+			if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){GPIOB->BSRR = (0x001B);}
+			else{GPIOB->BSRR = (0x001B << 16);}
+		}
+	}
+	else{
+		for(;;){ //Infinate State
+			HAL_Delay(1000);
+		}
+	}
 }
 
 /**
- * @desc: Read from eeprom Sushiboards Configuration Patterns
+ * @desc: Read from EEPROM SushiboardsConfiguration Patterns
  */
 void getSushiParameters(void){
 	sushiState.tOn           = (uint32_t)flashParameters[0];

@@ -23,19 +23,25 @@
 #include "stm32f0xx_it.h"
 #include "sushi_menu.h"
 
-extern uint16_t safetyToggle;
+volatile uint8_t sigGenEnable; //Enable Signal Generation -> This variable is used to stop the generation of signals for repetitive enviorment
+volatile uint8_t safetyToggle; //This variable is used to stop flase starts of signals
+
 extern uint32_t swOn[1];
 extern uint32_t swOff[1];
 
 extern UART_HandleTypeDef sushiUART;
+
 extern TIM_HandleTypeDef  pulseTimer1;
 extern TIM_HandleTypeDef  debounceTimer1;
+extern TIM_HandleTypeDef sigGenTimer1;
+
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
 
 extern volatile uint8_t   sigMode;
 extern volatile uint8_t   dmaTXBusy;
+extern volatile uint32_t  sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 extern void sushiInputFetch(void);
 uint32_t CNTDR_PRV;
@@ -44,6 +50,7 @@ uint32_t CNTDR_PRV;
  * SushiBoard UART PRIORITIES
  * EXTI0_1_IRQHandler                1 *
  * TIM14_IRQHandler                  4 *
+ * TIM14_IRQHandler                4-1 *
  * TIM1_BRK_UP_TRG_COM_IRQHandler    3 *
  * DMA1_Channel2_3_IRQHandler        2 *
  * SYSTICK                           5 *
@@ -140,6 +147,11 @@ void TIM14_IRQHandler(void){
 		HAL_TIM_Base_Stop(&debounceTimer1);        //Fire up the debounce time
 	}
 	HAL_TIM_IRQHandler(&debounceTimer1);
+}
+
+/* Timer 14 the Debounce timer init */
+void TIM16_IRQHandler(void){
+	HAL_TIM_IRQHandler(&sigGenTimer1);
 }
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
