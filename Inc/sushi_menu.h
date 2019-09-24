@@ -11,6 +11,7 @@
 #include "main.h" //Need to include this for the generalized sushi state construct
 #include "sushi_uart.h"
 #include "sushi_dma.h"
+#include "sushi_timer.h"
 #include "sushi_flash.h"
 
 extern SushiState sushiState;
@@ -23,7 +24,7 @@ void sushiMenuWelcome(void);
 void sushiMenuDisplay(void);
 void sushiMenuShowState(void);
 void sushiDisplayCursor(void);
-
+void applyChanges(void);
 /* Handelers and Patches */
 void sushiMenuWriteVAR(uint32_t var, const char* text, uint8_t len);
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);

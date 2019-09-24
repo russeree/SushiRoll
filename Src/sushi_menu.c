@@ -44,7 +44,7 @@ const char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. 
 const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
 const char sushiShowTonText[]              = "Ton Value is: ";
 const char sushiShowToffText[]             = "Toff Value is: ";
-const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r[t] Trigger Sushiboard.\n\r";
+const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r[t] Trigger Sushiboard.\n\r[a] Apply Changes.\n\r";
 const char sushiShowTdelayText[]           = "Tdelay Value is: ";
 const char sushiShowTperiodText[]          = "Tperiod Value is: ";
 const char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
@@ -55,9 +55,11 @@ const char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' fo
 const char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce time in mS \n\r";
 const char sushiMaxInputLenText[]          = " -> !!!MAX INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
 const char sushiTriggerExeText[]           = "\n\rTrigger successful.\n\r";
+const char sushiApplyText[]                = "\n\rChanges Applied - NOT WRITTEN TO FLASH\n\r>";
+
 /* Other Misc text items used for formatting */
 const char sushiTrueText[]                 = "True ";
-const char sushiFlaseText[]                = "False ";
+const char sushiFalseText[]                = "False ";
 const char sushiNewLineReturn[]            = "\n\r";
 const char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard... Please wait for a moment.\n\r"; //Saving changes to Sushiboard User Notificaion....
 const char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
@@ -144,7 +146,7 @@ void sushiInputFetch(void){
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				sushiMenuState = 0;
 				break;
-			case 0x37:
+			case 0x37: // '7' Saves Changes to the Devices EEPROM - DO NO USE ALL THE TIME - IMPLEMENT A WRITE COUNTER
 				writeDataToPage();
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingToEEPROMText, sizeof(sushiSavingToEEPROMText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
@@ -152,18 +154,26 @@ void sushiInputFetch(void){
 			case 0x38:
 				sushiMenuShowState();
 				break;
-			case 0x64: //Save the state of the debounce timing.
+			case 0x64: //Press the letter 'd' - Save the state of the debounce timing. - WORKS WEll
 				sushiMenuState = 1;
 				sushiMenuStatePrevious = 6;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSetDeounceTimeText, sizeof(sushiSetDeounceTimeText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
-			case 0x74: //Save the state of the debounce timing.
+			case 0x74: // 't' Activates the trigger, will not work in matching mode. - WORKS WELL
 				sushiMenuState = 0;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTriggerExeText, sizeof(sushiTriggerExeText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
 				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
+				break;
+			case 0x54: // 'T' Activates the trigger, NO DISPLAY OR ANYTHING JUST DOES IT VERY FAST RESPOSNE - WORKS WELL
+				sushiMenuState = 0;
+				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
+				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
+				break;
+			case 0x61: // 'a' Applies the changes made in ram - does not save them
+				applyChanges(); //Applies the Changes
 				break;
 			default:{
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInvalidCommandText, sizeof(sushiInvalidCommandText));
@@ -175,6 +185,13 @@ void sushiInputFetch(void){
 }
 
 /**
+ * Apply the changes made to the Sushiboard - Input Matching needs a reboot and is not a poart of this
+ */
+void applyChanges(void){
+	gateDriveParallelPulseTimerInit();
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiApplyText, sizeof(sushiApplyText));
+}
+/**
  * @desc: Prints out Sushiboards Paramaters stored in SRAM these are different than the valeus saved in EEPROM
  **/
 void sushiMenuShowState(void){
@@ -184,6 +201,12 @@ void sushiMenuShowState(void){
 	sushiMenuWriteVAR(sushiState.tDelay, sushiShowTdelayText, sizeof(sushiShowTdelayText));
 	sushiMenuWriteVAR(sushiState.tPeriod, sushiShowTperiodText, sizeof(sushiShowTperiodText));
 	sushiMenuWriteVAR(sushiState.tDebounce, sushiShowTdebounceText, sizeof(sushiShowTdebounceText)); //Displays the debouncing text
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowInputMatchingText, sizeof(sushiShowInputMatchingText));
+	if (sushiState.inputMatching == 0x00)
+		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiFalseText, sizeof(sushiFalseText));  //0 = Not Input Matching, 1 = true
+	else
+		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTrueText, sizeof(sushiTrueText));
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 	/*Still Need to make a special function fot Tinput_matching */
 }

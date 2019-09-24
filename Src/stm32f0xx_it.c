@@ -33,7 +33,7 @@ extern UART_HandleTypeDef sushiUART;
 
 extern TIM_HandleTypeDef  pulseTimer1;
 extern TIM_HandleTypeDef  debounceTimer1;
-extern TIM_HandleTypeDef sigGenTimer1;
+extern TIM_HandleTypeDef  sigGenTimer1;
 
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
@@ -44,6 +44,7 @@ extern volatile uint8_t   dmaTXBusy;
 extern volatile uint32_t  sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 extern void sushiInputFetch(void);
+
 uint32_t CNTDR_PRV;
 
 /**

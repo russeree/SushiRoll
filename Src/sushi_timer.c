@@ -19,16 +19,16 @@ TIM_OC_InitTypeDef tcOn;                                               // Timer 
 TIM_OC_InitTypeDef tcOff;                                              // Timer or the On Pulse
 
 /**
- * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
- * @Note: Without Adjusting period.... due to the fact the timer is limited to 16 bits 65535us or 65.535ms Max Pulse Length.
- */
-
-/**
  * @desc: Changes the timebase of timer 1 - Note must enabled timed and serial pulses
  **/
 void changeTimeBase(uint16_t scaler){
 }
 
+
+/**
+ * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
+ * @Note: Without Adjusting period.... due to the fact the timer is limited to 16 bits 65535us or 65.535ms Max Pulse Length.
+ */
 void gateDriveParallelPulseTimerInit(void){                             // 10ms Period
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal
@@ -64,14 +64,13 @@ void gateDriveParallelPulseTimerInit(void){                             // 10ms 
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
-	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare                                   //Start the Time Base Tracker
+	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
 }
 
 /**
  * @Desc: Sets up Timer 14 to Send out updates every 100 us, on each update write the input pins state, if the pin started high and ended low, ingnore and do not trigger interupt for a DMA timer switch
  * @Param: (unit8_t)[timeMS] this is the switch you use minimum specified dead timer in MS
  */
-
 void switchInputDebouceTimerInit(uint16_t timeMS){
 	uint16_t usPrescaler = (SystemCoreClock / 1000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enable the Clock for timer 14

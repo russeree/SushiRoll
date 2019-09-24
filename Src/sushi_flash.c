@@ -27,7 +27,8 @@ void writeDataToPage(void){
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 8, (uint32_t)sushiState.tDelay);          //...
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 12, (uint32_t)sushiState.tPeriod);        //...
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 16, (uint32_t)sushiState.inputMatching);  //Finaly Write the Last bit of Data... The chip is free to go
-	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 20, (uint32_t)sushiState.tDebounce);  //Finaly Write the Last bit of Data... The chip is free to go
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 20, (uint32_t)sushiState.tDebounce);      //Finaly Write the Last bit of Data... The chip is free to go
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 24, (uint32_t)sushiState.sigGenMode);     //Finaly Write the Last bit of Data... The chip is free to go
 	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG)); //Clear the flash programming bits before unlocking again
 	HAL_FLASH_Lock();
 }

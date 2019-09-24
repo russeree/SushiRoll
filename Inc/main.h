@@ -55,7 +55,11 @@ typedef struct SushiState{
 	int tDelay;
 	int inputMatching;
 	int tDebounce;
-} SushiState;
+	int sigGenMode;
+} volatile SushiState;
+
+enum sigModeName {SushiModeManual, SushiModeContinuous, SushiModeCycles};
+enum inputMatching {InputMatchingFalse, InputMatchingTrue};
 
 void getSushiParameters(void);
 

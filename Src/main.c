@@ -36,21 +36,23 @@
 void SystemClock_Config(void);
 
 char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
+char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Changes Require Restart\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
 		6,    //Time on
 		10,   //Time off
 		1000, //Period
 		100,  //Delay
-		0,    //Do Not Match Inputs
+		0,    //Do Not Match Inputs - Input matching overrides all Modes
 		5,    //5ms Debounce - Cherry MX Blues spec
-		0,
+		0,    //Sig-Gen Mode
 		0,
 		0,
 		0     //these are not used
 };
 
-SushiState sushiState;
+volatile SushiState sushiState;
+
 volatile uint8_t sigMode;         //Signal Modes 0 = Manual Tigger, 1 = Continious, 2 = run for a certain number of cycles;
 volatile uint32_t sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
@@ -71,7 +73,8 @@ int main(void){
 	initSushiBoardUART();
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
 	/* Main Loop: No Code all Interupt Driven*/
-	if (sushiState.inputMatching == 0x01){ // If you are matching inputs then just take the input pin and
+	if (sushiState.inputMatching == InputMatchingTrue){ // If you are matching inputs then just take the input pin and
+		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInputMatchingText, sizeof(sushiInputMatchingText));
 		HAL_NVIC_DisableIRQ(EXTI0_1_IRQn); // Turn off the IRQ we dont need any timer intervention here
 		for(;;){                           // Now you just match the Inputs until the device reboots. INFINATE LOOP
 			if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){GPIOB->BSRR = (0x001B);}
@@ -95,6 +98,7 @@ void getSushiParameters(void){
 	sushiState.tPeriod       = (uint32_t)flashParameters[3]; //FIXED - SWAPED Period and Delay on Boot
 	sushiState.inputMatching = (uint32_t)flashParameters[4];
 	sushiState.tDebounce     = (uint32_t)flashParameters[5];
+	sushiState.sigGenMode    = (uint32_t)flashParameters[6]; //Added a signal generator mode;
 }
 
 /**
@@ -122,9 +126,9 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_PCLK1;
+  RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
