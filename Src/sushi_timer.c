@@ -24,6 +24,8 @@ TIM_OC_InitTypeDef tcOff;                                              // Timer 
 void changeTimeBase(uint16_t scaler){
 }
 
+
+
 void gateDriveParallelPulseTimerInitPWMSimpleContinuious(void){
 	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal

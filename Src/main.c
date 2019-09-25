@@ -39,14 +39,14 @@ char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Changes Require Restart\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
-		6,    //Time on
-		10,   //Time off
-		1000, //Period
-		100,  //Delay
+		6,    //Time on DEFAULT = 6US
+		10,   //Time off DEFAULT = 10US
+		1000, //Period DEFAULT = 1MS period
+		100,  //Delay DEFAULT = 100US
 		0,    //Do Not Match Inputs - Input matching overrides all Modes
 		5,    //5ms Debounce - Cherry MX Blues spec
 		0,    //Sig-Gen Mode
-		0,
+		(HSE_VALUE * _PLL_MUL) / 1000000 - 1, //Default is a 1US Timebose for a 16MHZ HSE Oscilator
 		0,
 		0     //these are not used
 };
@@ -99,6 +99,7 @@ void getSushiParameters(void){
 	sushiState.inputMatching = (uint32_t)flashParameters[4];
 	sushiState.tDebounce     = (uint32_t)flashParameters[5];
 	sushiState.sigGenMode    = (uint32_t)flashParameters[6]; //Added a signal generator mode;
+	sushiState.pwmTimeBase   = (uint32_t)flashParameters[7]; //Added the ability to grab a timebase value from sushiboard
 }
 
 /**

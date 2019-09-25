@@ -48,6 +48,9 @@ void Error_Handler(void);
 #define Fet_Trigger_GPIO_Port GPIOB
 #define Fet_Trigger_EXTI_IRQn EXTI4_15_IRQn
 
+//Sushiboard ONLY DEFINES
+#define _PLL_MUL 3
+
 typedef struct SushiState{
 	int tOn;
 	int tOff;
@@ -56,6 +59,7 @@ typedef struct SushiState{
 	int inputMatching;
 	int tDebounce;
 	int sigGenMode;
+	int pwmTimeBase;
 } volatile SushiState;
 
 enum sigModeName {SushiModeManual, SushiModeContinuous, SushiModeCycles};
