@@ -8,7 +8,7 @@
 
 #include "sushi_timer.h"
 
-extern volatile uint8_t sigMode;                                       // The signal timebase mode
+//extern volatile uint8_t sigMode;                                       // The signal timebase mode
 extern SushiState sushiState;
 
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
@@ -18,6 +18,15 @@ TIM_HandleTypeDef sigGenTimer1;                                        // Signal
 TIM_OC_InitTypeDef tcOn;                                               // Timer or the On Pulse
 TIM_OC_InitTypeDef tcOff;                                              // Timer or the On Pulse
 
+/**
+ * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
+ */
+void deInitTimer1(void){
+	__HAL_RCC_TIM1_CLK_DISABLE();      //Disable The Clock
+	HAL_TIM_Base_Stop(&pulseTimer1);   //Stop the time base - Pulse Train Generator
+	HAL_TIM_Base_DeInit(&pulseTimer1); //De-Init the timebase -> Begin to reconfig the timer for the next use
+	__HAL_RCC_TIM1_CLK_ENABLE();       //Enable The Clock
+}
 /**
  * @desc: Changes the timebase of timer 1 - Note must enabled timed and serial pulses
  **/
@@ -31,7 +40,7 @@ void changeTimeBase(uint16_t scaler){
 void gateDriveParallelInitPWMSimpleContinuious(uint32_t  period, uint32_t dutyCycle, uint32_t timebase){
 	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;                   // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal
-	__HAL_RCC_TIM1_CLK_ENABLE();
+	deInitTimer1();                                                     //De-Init Timer 1
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
 	pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;        //Do not divide the counter clock
@@ -55,9 +64,7 @@ void gateDriveParallelInitPWMSimpleContinuious(uint32_t  period, uint32_t dutyCy
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
-	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
 }
-
 
 /**
  * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers

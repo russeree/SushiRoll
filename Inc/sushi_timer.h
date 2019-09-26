@@ -11,6 +11,10 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
+/* Helper Functions and Externs */
+void deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
+
+/* Main Function Group */
 void signalGenCounter(uint16_t timeMS);             // Determines the time to repeat the signal... for longer runs
 void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for the primary signal counter
 void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
