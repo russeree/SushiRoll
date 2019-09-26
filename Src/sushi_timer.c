@@ -25,9 +25,11 @@ void changeTimeBase(uint16_t scaler){
 }
 
 
-
-void gateDriveParallelPulseTimerInitPWMSimpleContinuious(void){
-	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
+/**
+ * @Desc: Sushiboard Continious PWM Mode - Adding an Easy Update Function - USING TIMER 1 - CHANNEL ONE AND UPDATE
+ */
+void gateDriveParallelInitPWMSimpleContinuious(uint32_t  period, uint32_t dutyCycle, uint32_t timebase){
+	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;                   // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	//Setup The Timer Parameters
@@ -44,17 +46,9 @@ void gateDriveParallelPulseTimerInitPWMSimpleContinuious(void){
 	tcOn.OCMode       = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	tcOn.OCPolarity   = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
 	tcOn.OCNPolarity  = TIM_OCNPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
-	//Setup the On Timer Channel Outputs
-	tcOff.Pulse       = (uint16_t)sushiState.tOff;                      //Time before the DMA requst is sent to the BSRR to turn off the switching GPIO
-	tcOff.OCFastMode  = TIM_OCFAST_DISABLE;                             //No need for fast mode
-	tcOff.OCMode      = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
-	tcOff.OCPolarity  = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
-	tcOff.OCNPolarity = TIM_OCNPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
-	//Lets do Some Fun Stuff Here... DAM CC1 and 2 Events -> send the data to the BSSR registers for a pulse on and off
 	//The order and events may change in the future for now this is proof of concept.
 	__HAL_TIM_ENABLE_IT(&pulseTimer1, TIM_IT_UPDATE);                   //TIMER INTERUPT UPDATE START
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
-	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC2);                    //Capture Compare 2 Event (User event, This may not be used)
 	//sET THE INTERUPT ROUTINE PRIORITY
 	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
 	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt

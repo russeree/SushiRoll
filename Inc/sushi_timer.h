@@ -20,7 +20,7 @@ void gateDriveParallelInitPWMSimpleContinuious(uint32_t  period, uint32_t dutyCy
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 
 enum TimeBase {
-	TB_CoreClock = 1,
+	TB_CoreClock = 0,
 	TB_1US = (HSE_VALUE * _PLL_MUL) / 1000000 - 1,
 	TB_1MS = (HSE_VALUE * _PLL_MUL) / 1000 - 1,
 	TB_1S  = (HSE_VALUE * _PLL_MUL) - 1,

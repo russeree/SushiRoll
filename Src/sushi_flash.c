@@ -22,7 +22,7 @@ void writeDataToPage(void){
 	CLEAR_BIT (FLASH->CR, (FLASH_CR_PER));
 	HAL_FLASH_Lock();
 	HAL_FLASH_Unlock();
-	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters, (uint32_t)sushiState.tOn);                 //Being Writing the SushiState Structure to the device
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 0, (uint32_t)sushiState.tOn);                 //Being Writing the SushiState Structure to the device
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 4, (uint32_t)sushiState.tOff);            //Another Address and More Data
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 8, (uint32_t)sushiState.tDelay);          //...
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 12, (uint32_t)sushiState.tPeriod);        //...
