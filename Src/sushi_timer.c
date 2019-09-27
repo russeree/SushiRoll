@@ -16,7 +16,14 @@ TIM_HandleTypeDef debounceTimer1;                                      // TimeBa
 TIM_HandleTypeDef sigGenTimer1;                                        // Signal Generation Timer / Counter
 
 TIM_OC_InitTypeDef tcOn;                                               // Timer or the On Pulse
-TIM_OC_InitTypeDef tcOff;                                              // Timer or the On Pulse
+TIM_OC_InitTypeDef tcOff;                                              // Timer or the Off Pulse
+
+/* INIT OF THE TIEMER COFIGURATION */
+volatile TimerConfig TimrCfg = {
+		.mode = Trigger,  //Trigger Mode By Default
+		.tb = TB_1US,     //Use a 1uS timebase
+		.longP = LP_False    //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
+};
 
 /**
  * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
