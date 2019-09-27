@@ -11,6 +11,8 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
+extern SushiState sushiState;
+
 /* Helper Functions and Externs */
 void deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
 
@@ -20,6 +22,9 @@ void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for 
 void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
 void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
 void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
+
+/* SAL Sushi Abstraction Layer */
+SushiStatus setupPWM(uint8_t timebase, uint32_t units, uint8_t dutyCycle);
 
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 typedef enum {
@@ -60,5 +65,6 @@ typedef struct TimerConfig{
 	uint16_t  tOn_Tigger;    //Time @ which the DMA event fires for channel 2 -> Usualy used to set the BSR High
 	uint16_t  tOff_Trigger;  //Time @ which the DMA event fires for channel 3 -> Usyaly used to set the BSR Low !!! Not used for PWM modes
 } TimerConfig;
+
 
 #endif /* SUSHI_TIMER_H_ */

@@ -9,7 +9,7 @@
 #include "sushi_timer.h"
 
 //extern volatile uint8_t sigMode;                                       // The signal timebase mode
-extern SushiState sushiState;
+
 
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
 TIM_HandleTypeDef debounceTimer1;                                      // TimeBase Structure
@@ -18,12 +18,16 @@ TIM_HandleTypeDef sigGenTimer1;                                        // Signal
 TIM_OC_InitTypeDef tcOn;                                               // Timer or the On Pulse
 TIM_OC_InitTypeDef tcOff;                                              // Timer or the Off Pulse
 
-/* INIT OF THE TIEMER COFIGURATION */
-volatile TimerConfig TimrCfg = {
+/* INIT OF THE TIEMER COFIGURATION VOLATILE AS INTERUPTS USE IT FOR COUNTING*/
+volatile TimerConfig SushiTimer = {
 		.mode = Trigger,  //Trigger Mode By Default
 		.tb = TB_1US,     //Use a 1uS timebase
 		.longP = LP_False    //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
 };
+
+SushiStatus setupPWM(uint8_t timebase, uint32_t units, uint8_t dutyCycle){
+	return SushiSuccess;
+}
 
 /**
  * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs

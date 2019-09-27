@@ -51,6 +51,11 @@ void Error_Handler(void);
 //Sushiboard ONLY DEFINES
 #define _PLL_MUL 3
 
+typedef enum SushiStatus{
+	SushiSuccess,
+	SushiFail,
+	SushiBusy,
+} SushiStatus;
 typedef struct SushiState{
 	int tOn;
 	int tOff;
