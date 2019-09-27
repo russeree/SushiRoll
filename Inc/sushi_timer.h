@@ -65,6 +65,6 @@ void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the de
 void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
 
 /* SAL Sushi Abstraction Layer */
-SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, uint8_t dutyCycle);
+SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
 
 #endif /* SUSHI_TIMER_H_ */

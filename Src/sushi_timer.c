@@ -25,15 +25,39 @@ volatile TimerConfig SushiTimer = {
 		.longP = LP_False  //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
 };
 
-SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, uint8_t dutyCycle){
-	uint16_t timerScaler = 1; //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
-	const uint16_t timerMaxCount = 0xFFFF;
-	if(TC->tb == TB_1S){
-
+/**
+ * @desc: This section is used for continuous PWM functionality. Large numbers are needed for users who may have very large and long time frames to deal with on the order of day or weeks
+ * @param[TC]: This is the timer configuration structure
+ * @param[timebase]: What are the units of time we are dealing with here
+ * @param[uints]: The total number of periods to cycle though before toggling the signal value
+ * @para,[dutyCycle]: This is the percentage value that the user would like to use to use
+ */
+SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
+	/* Determine the needed number of clock cycles for the entire period from the base unit */
+	uint64_t timerScaler = 1; //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint64_t dutyCycleCount;  //This Stores the exact time that the signal will flip over
+	uint64_t quotient; // Holds the Values of the Long counts
+	uint16_t remainder; // Holds the remaining counts before the required update event for the sginals
+	switch(timebase){
+		case TB_1S:
+			timerScaler = 18000000;
+			break;
+		case TB_1MS:
+			timerScaler = 48000;
+			break;
+		case TB_1US:
+			timerScaler = 48;
+			break;
+		case TB_CoreClock:
+			timerScaler = 1;
+			break;
+		default:
+			return SushiFail;
 	}
-	else{
-
-	}
+	timerScaler *= units; //This is the total number of cycles necesarry at the given period value
+	quotient = timerScaler / 0xFFFF;
+	remainder = timerScaler % quotient;
+	dutyCycleCount = timerScaler * (dutyCycle / 100);
 	return SushiSuccess;
 }
 
