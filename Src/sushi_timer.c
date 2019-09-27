@@ -38,7 +38,7 @@ void changeTimeBase(uint16_t scaler){
 /**
  * @Desc: Sushiboard Continious PWM Mode - Adding an Easy Update Function - USING TIMER 1 - CHANNEL ONE AND UPDATE
  */
-void gateDriveParallelInitPWMSimpleContinuious(uint8_t period, uint8_t dutyCycle, uint8_t timebase){
+void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase){
 	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;                   // Number of cycles to generate 1m_pulses/sec
 	//Enabled Needed Clock Signals for the Timer perhipreal
 	deInitTimer1();                                                     //De-Init Timer 1
@@ -49,9 +49,11 @@ void gateDriveParallelInitPWMSimpleContinuious(uint8_t period, uint8_t dutyCycle
 	pulseTimer1.Init.Period            = (uint16_t)sushiState.tPeriod;  //The period will be 1000 us counts before an update event DMA trigger
 	pulseTimer1.Init.Prescaler         = usPrescaler;                   //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
 	if (timebase == TB_1S){
-		pulseTimer1.Init.RepetitionCounter = 1000 * period;             //Use A Repetition Counter MAX Period = 65.535 Seconds
+		pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV4;        //Do not divide the counter clock
+		pulseTimer1.Init.RepetitionCounter = 250;             //Use A Repetition Counter MAX Period = 65.535 Seconds
 	}
 	else{
+		pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
 		pulseTimer1.Init.RepetitionCounter = 0;                         //Use A Repetition Counter
 	}
 	pulseTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; //Shadow Mask.... Just enable it
