@@ -20,12 +20,20 @@ TIM_OC_InitTypeDef tcOff;                                              // Timer 
 
 /* INIT OF THE TIEMER COFIGURATION VOLATILE AS INTERUPTS USE IT FOR COUNTING*/
 volatile TimerConfig SushiTimer = {
-		.mode = Trigger,  //Trigger Mode By Default
-		.tb = TB_1US,     //Use a 1uS timebase
-		.longP = LP_False    //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
+		.mode = Trigger,   //Trigger Mode By Default
+		.tb = TB_1US,      //Use a 1uS timebase
+		.longP = LP_False  //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
 };
 
-SushiStatus setupPWM(uint8_t timebase, uint32_t units, uint8_t dutyCycle){
+SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, uint8_t dutyCycle){
+	uint16_t timerScaler = 1; //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	const uint16_t timerMaxCount = 0xFFFF;
+	if(TC->tb == TB_1S){
+
+	}
+	else{
+
+	}
 	return SushiSuccess;
 }
 

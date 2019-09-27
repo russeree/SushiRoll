@@ -16,18 +16,8 @@ extern SushiState sushiState;
 /* Helper Functions and Externs */
 void deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
 
-/* Main Function Group */
-void signalGenCounter(uint16_t timeMS);             // Determines the time to repeat the signal... for longer runs
-void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for the primary signal counter
-void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
-void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
-void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
-
-/* SAL Sushi Abstraction Layer */
-SushiStatus setupPWM(uint8_t timebase, uint32_t units, uint8_t dutyCycle);
-
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
-typedef enum {
+typedef enum TimeBase{
 	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
 	TB_1US = (HSE_VALUE * _PLL_MUL) / 1000000 - 1, //48 cycles for sushiboard
 	TB_1MS = (HSE_VALUE * _PLL_MUL) / 1000 - 1,    //48000 cycles for sushiboard
@@ -41,7 +31,7 @@ typedef enum {
 /**
  * @desc: Modes of operation for Sushiboard - PWM continious - and manualy triggered
  */
-typedef enum {
+typedef enum TimerMode{
 	PWM,
 	Trigger,
 }TimerMode;
@@ -50,7 +40,7 @@ typedef enum {
  * @Desc: LP False Means that the long pulse is disabled, the long pulse means the the interupt routine keeps track of the
  * state of time in terms of units, this allows for very long duty cycles and trigger sequences.
  */
-typedef enum{
+typedef enum LongPulse{
 	LP_False,
 	LP_True
 }LongPulse;
@@ -66,5 +56,15 @@ typedef struct TimerConfig{
 	uint16_t  tOff_Trigger;  //Time @ which the DMA event fires for channel 3 -> Usyaly used to set the BSR Low !!! Not used for PWM modes
 } TimerConfig;
 
+
+/* Main Function Group */
+void signalGenCounter(uint16_t timeMS);             // Determines the time to repeat the signal... for longer runs
+void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for the primary signal counter
+void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
+void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
+void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
+
+/* SAL Sushi Abstraction Layer */
+SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, uint8_t dutyCycle);
 
 #endif /* SUSHI_TIMER_H_ */
