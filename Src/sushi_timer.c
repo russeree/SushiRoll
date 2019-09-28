@@ -34,41 +34,52 @@ volatile TimerConfig SushiTimer = {
  */
 SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint64_t timerScaler = 1; //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
-	uint64_t dutyCycleCount;  //This Stores the exact time that the signal will flip over
-	uint64_t quotient; // Holds the Values of the Long counts
-	uint16_t remainder; // Holds the remaining counts before the required update event for the sginals
+	uint64_t clkCycles;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	/* Setup the State Machine Values */
+	sushiState.sigGenMode = SignalModePWM;
+	TC->mode = PWM;
+	/* Begin the math needed to count the number of timer cycles to complete a PERIOD */
 	switch(timebase){
 		case TB_1S:
-			timerScaler = 18000000;
+ 			clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
 			break;
 		case TB_1MS:
-			timerScaler = 48000;
+			clkCycles = 48000; //48000 Cycles to count to 1MS
 			break;
 		case TB_1US:
-			timerScaler = 48;
+			clkCycles = 48; //48 Cycles to count to 1US
 			break;
 		case TB_CoreClock:
-			timerScaler = 1;
+			clkCycles = 1; //Core Clock is always just 1 cycle per cycle
 			break;
 		default:
 			return SushiFail;
 	}
-	timerScaler *= units; //This is the total number of cycles necesarry at the given period value
-	quotient = timerScaler / 0xFFFF;
-	remainder = timerScaler % quotient;
-	dutyCycleCount = timerScaler * (dutyCycle / 100);
+	clkCycles *= units;                                   //This is the total number of cycles necesarry at the given period value
+	TC->counts = clkCycles / 0xFFFF;                      //Total Number of cycles needed to pass for a given period
+	TC->remainingCycles = clkCycles % SushiTimer.counts;  //Final Number of cycles left over for the counter
+	TC->pwmCount = clkCycles * (dutyCycle / 100);         //This is the number at which the duty cycle will flip
+	TC->dutyCycle = dutyCycle;
+	/* Now that we have all the data Determine a Configuration for the SushiTimer */
+	if(TC->counts == 0){
+		TC->longP = LP_False; //Not using a long pulse therefore all of the math and signal timing will occour within the loop
+	}
+	else{
+		TC->longP = LP_True;
+	}
+	deInitTimer1(); //DeInit the timer
 	return SushiSuccess;
 }
 
 /**
  * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
  */
-void deInitTimer1(void){
+SushiStatus deInitTimer1(void){
 	__HAL_RCC_TIM1_CLK_DISABLE();      //Disable The Clock
 	HAL_TIM_Base_Stop(&pulseTimer1);   //Stop the time base - Pulse Train Generator
 	HAL_TIM_Base_DeInit(&pulseTimer1); //De-Init the timebase -> Begin to reconfig the timer for the next use
 	__HAL_RCC_TIM1_CLK_ENABLE();       //Enable The Clock
+	return SushiSuccess;
 }
 /**
  * @desc: Changes the timebase of timer 1 - Note must enabled timed and serial pulses

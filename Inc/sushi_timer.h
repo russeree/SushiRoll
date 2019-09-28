@@ -13,9 +13,6 @@
 
 extern SushiState sushiState;
 
-/* Helper Functions and Externs */
-void deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
-
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 typedef enum TimeBase{
 	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
@@ -46,15 +43,20 @@ typedef enum LongPulse{
 }LongPulse;
 
 typedef struct TimerConfig{
-	TimerMode mode;          //What mode is the Counter Running In
-	TimeBase  tb;            //For PWM what is the timebase being used to derive the longer shrot pulses
-	LongPulse longP;         //This is used when the user needs to count and trigger outside of the normal scope of events
-	uint32_t  counts;        //The number of total counts of a Timebase unit needed to complete a period
-	uint8_t   dutyCycle;     //For the PWM mode select a duty cycle to use... This is adjustable
-	uint32_t  count;         //Current Count Number
-	uint16_t  tOn_Tigger;    //Time @ which the DMA event fires for channel 2 -> Usualy used to set the BSR High
-	uint16_t  tOff_Trigger;  //Time @ which the DMA event fires for channel 3 -> Usyaly used to set the BSR Low !!! Not used for PWM modes
+	TimerMode mode;            //What mode is the Counter Running In
+	TimeBase  tb;              //For PWM what is the timebase being used to derive the longer shrot pulses
+	LongPulse longP;           //This is used when the user needs to count and trigger outside of the normal scope of events
+	uint64_t  counts;          //The number of total counts of a Timebase unit needed to complete a period
+	uint64_t  count;           //Current Count Number
+	uint64_t  pwmCount;        //The PWM Value that is stored
+	double    dutyCycle;       //For the PWM mode select a duty cycle to use... This is adjustable
+	uint16_t  tOn_Tigger;      //Time @ which the DMA event fires for channel 2 -> Usualy used to set the BSR High
+	uint16_t  tOff_Trigger;    //Time @ which the DMA event fires for channel 3 -> Usyaly used to set the BSR Low !!! Not used for PWM modes
+	uint16_t  remainingCycles; //How many cycles are left over before completing a cycle
 } TimerConfig;
+
+/* Helper Functions and Externs */
+SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
 
 
 /* Main Function Group */
@@ -62,7 +64,7 @@ void signalGenCounter(uint16_t timeMS);             // Determines the time to re
 void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for the primary signal counter
 void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
 void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
-void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
+void sushiPWMSetup(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
 
 /* SAL Sushi Abstraction Layer */
 SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);

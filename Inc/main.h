@@ -54,8 +54,19 @@ void Error_Handler(void);
 typedef enum SushiStatus{
 	SushiSuccess,
 	SushiFail,
-	SushiBusy,
+	SushiBusy
 } SushiStatus;
+
+enum sigModeName {
+	SignalModeTrigger,
+	SignalModePWM
+};
+
+enum inputMatching {
+	InputMatchingFalse,
+	InputMatchingTrue
+};
+
 typedef struct SushiState{
 	int tOn;
 	int tOff;
@@ -66,9 +77,6 @@ typedef struct SushiState{
 	int sigGenMode;
 	int pwmTimeBase;
 } volatile SushiState;
-
-enum sigModeName {SushiModeManual, SushiModeContinuous, SushiModeCycles};
-enum inputMatching {InputMatchingFalse, InputMatchingTrue};
 
 void getSushiParameters(void);
 
