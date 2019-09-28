@@ -16,9 +16,9 @@ extern SushiState sushiState;
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 typedef enum TimeBase{
 	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
-	TB_1US = (HSE_VALUE * _PLL_MUL) / 1000000 - 1, //48 cycles for sushiboard
-	TB_1MS = (HSE_VALUE * _PLL_MUL) / 1000 - 1,    //48000 cycles for sushiboard
-	TB_1S  = 0xFF                                  //This just has to be a value that the other 3 are not
+	TB_1US = (HSE_VALUE * _PLL_MUL) / 1000000 - 1, // 48 cycles for sushiboard
+	TB_1MS = (HSE_VALUE * _PLL_MUL) / 1000 - 1,    // 48000 cycles for sushiboard
+	TB_1S  = 0xFFFFFFFF                            // This just has to be a value that the other 3 are not
 } TimeBase;
 /**
  * If the timebase is equal to 1 second -> set to 255 so that the Repition Counter knows when to stop,
@@ -58,13 +58,11 @@ typedef struct TimerConfig{
 /* Helper Functions and Externs */
 SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
 
-
 /* Main Function Group */
-void signalGenCounter(uint16_t timeMS);             // Determines the time to repeat the signal... for longer runs
-void changeTimeBase(uint16_t scaler);               // Changes the Tamebase for the primary signal counter
-void gateDriveParallelPulseTimerInit(void);         // Init a timer designed to trigger all MOSFETs at one time.
+void signalGenCounter(uint16_t timeMS); // Determines the time to repeat the signal... for longer runs
+void gateDriveParallelPulseTimerInit(void); // Init a timer designed to trigger all MOSFETs at one time.
 void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
-void sushiPWMSetup(uint16_t period, uint8_t dutyCycle, uint8_t timebase); // PWM Continious Initialization
+SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase); // PWM Continious Initialization
 
 /* SAL Sushi Abstraction Layer */
 SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);

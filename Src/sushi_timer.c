@@ -10,7 +10,6 @@
 
 //extern volatile uint8_t sigMode;                                       // The signal timebase mode
 
-
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
 TIM_HandleTypeDef debounceTimer1;                                      // TimeBase Structure
 TIM_HandleTypeDef sigGenTimer1;                                        // Signal Generation Timer / Counter
@@ -30,33 +29,43 @@ volatile TimerConfig SushiTimer = {
  * @param[TC]: This is the timer configuration structure
  * @param[timebase]: What are the units of time we are dealing with here
  * @param[uints]: The total number of periods to cycle though before toggling the signal value
- * @para,[dutyCycle]: This is the percentage value that the user would like to use to use
+ * @param[dutyCycle]: This is the percentage value that the user would like to use to use
+ * @notes: The only timebases you can directly enter into the timer are ClockCycle, 1US, and 1MS. MAX COUNT 65535
  */
+
+#define MAX_PRESCALER 0xFFFF
+#define MAX_PERIOD    0xFFFF
+
 SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint64_t clkCycles;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint64_t clkCycles = 0;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	TC->mode = PWM;
+	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){
+		sushiTimeBaseInit(TC, units, timebase); //The parameters we are using to generate a timebase fit inside the 16bit prescaler
+	}
+	else
+	/* First Check and see if we can just do a direct input into the timer */
 	/* Begin the math needed to count the number of timer cycles to complete a PERIOD */
 	switch(timebase){
 		case TB_1S:
  			clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
 			break;
 		case TB_1MS:
-			clkCycles = 48000; //48000 Cycles to count to 1MS
+			clkCycles = 48000;    //48000 Cycles to count to 1MS
 			break;
 		case TB_1US:
-			clkCycles = 48; //48 Cycles to count to 1US
+			clkCycles = 48;       //48 Cycles to count to 1US
 			break;
 		case TB_CoreClock:
-			clkCycles = 1; //Core Clock is always just 1 cycle per cycle
+			clkCycles = 1;        //Core Clock is always just 1 cycle per cycle
 			break;
 		default:
 			return SushiFail;
 	}
 	clkCycles *= units;                                   //This is the total number of cycles necesarry at the given period value
-	TC->counts = clkCycles / 0xFFFF;                      //Total Number of cycles needed to pass for a given period
+	TC->counts = ((clkCycles / 0xFFFF) / 0xFFFF);         //Total Number of cycles needed to pass for a given period
 	TC->remainingCycles = clkCycles % SushiTimer.counts;  //Final Number of cycles left over for the counter
 	TC->pwmCount = clkCycles * (dutyCycle / 100);         //This is the number at which the duty cycle will flip
 	TC->dutyCycle = dutyCycle;
@@ -81,51 +90,35 @@ SushiStatus deInitTimer1(void){
 	__HAL_RCC_TIM1_CLK_ENABLE();       //Enable The Clock
 	return SushiSuccess;
 }
-/**
- * @desc: Changes the timebase of timer 1 - Note must enabled timed and serial pulses
- **/
-void changeTimeBase(uint16_t scaler){
-
-}
-
 
 /**
  * @Desc: Sushiboard Continious PWM Mode - Adding an Easy Update Function - USING TIMER 1 - CHANNEL ONE AND UPDATE
  */
-void gateDriveParallelInitPWMSimpleContinuious(uint16_t period, uint8_t dutyCycle, uint8_t timebase){
-	uint16_t usPrescaler = (HSI_VALUE / 1000000) - 1;                   // Number of cycles to generate 1m_pulses/sec
+SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase){
 	//Enabled Needed Clock Signals for the Timer perhipreal
 	deInitTimer1();                                                     //De-Init Timer 1
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
-	pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;        //Do not divide the counter clock
 	pulseTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;            //This timer will count upwards 0,1,2,3..... Period, 0, 1 ...
-	pulseTimer1.Init.Period            = (uint16_t)sushiState.tPeriod;  //The period will be 1000 us counts before an update event DMA trigger
-	pulseTimer1.Init.Prescaler         = usPrescaler;                   //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
+	pulseTimer1.Init.Period            = period;                        //The period will be 1000 us counts before an update event DMA trigger
+	pulseTimer1.Init.Prescaler         = timebase;                      //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
 	if (timebase == TB_1S){
-		pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV4;        //Do not divide the counter clock
-		pulseTimer1.Init.RepetitionCounter = 250;             //Use A Repetition Counter MAX Period = 65.535 Seconds
+		pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV4;    //Do not divide the counter clock
+		pulseTimer1.Init.RepetitionCounter = 250;                       //Use A Repetition Counter MAX Period = 65.535 Seconds
 	}
 	else{
 		pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
 		pulseTimer1.Init.RepetitionCounter = 0;                         //Use A Repetition Counter
 	}
 	pulseTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; //Shadow Mask.... Just enable it
-	//Setup the On Timer Channel Outputs
-	tcOn.Pulse        = (uint16_t)sushiState.tOn;                       //Time before the DMA requst is sent to the BSRR to turn on the switching GPIO
-	tcOn.OCFastMode   = TIM_OCFAST_DISABLE;                             //No need for fast mode
-	tcOn.OCMode       = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
-	tcOn.OCPolarity   = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
-	tcOn.OCNPolarity  = TIM_OCNPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
 	//The order and events may change in the future for now this is proof of concept.
 	__HAL_TIM_ENABLE_IT(&pulseTimer1, TIM_IT_UPDATE);                   //TIMER INTERUPT UPDATE START
-	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
 	//sET THE INTERUPT ROUTINE PRIORITY
 	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
 	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
-	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
+	return SushiSuccess;
 }
 
 /**
