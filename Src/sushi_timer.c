@@ -42,12 +42,8 @@ SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float d
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	TC->mode = PWM;
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	HAL_Delay(2);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	/* First Check and see if we can just do a direct input into the timer */
 	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
-		sushiDBGPin(1);
 		uint16_t dutyCyclePulse = (dutyCycle/100)*units;
 		sushiTimeBaseInit(TC, units, timebase); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);   //Begin the PWM Setup
@@ -97,9 +93,8 @@ SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float d
  * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
  */
 SushiStatus deInitTimer1(void){
-	__HAL_RCC_TIM1_CLK_DISABLE();                       //Disable The Clock
-	HAL_TIM_Base_Stop(&pulseTimer1);                    //Stop the time base - Pulse Train Generator
-	HAL_TIM_Base_DeInit(&pulseTimer1);                  //De-Init the timebase -> Begin to reconfig the timer for the next use
+	//__HAL_RCC_TIM1_CLK_DISABLE();                       //Disable The Clock
+	//HAL_TIM_Base_Stop(&pulseTimer1);                    //Stop the time base - Pulse Train Generator
 	__HAL_RCC_TIM1_CLK_ENABLE();                        //Enable The Clock
 	return SushiSuccess;
 }
@@ -123,16 +118,8 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
-	HAL_TIM_PWM_Start(&pulseTimer1)
-	/*DMA DRAMA */
-	HAL_DMA_DeInit(&pulseGenOnDMATimer);                                //Why de-init? Maybe to make sure all registers are reset
-	HAL_DMA_DeInit(&pulseGenOffDMATimer);      //Why de-init? Maybe to make sure all registers are rese
-	HAL_DMA_Init(&pulseGenOnDMATimer);         //Init with the DMA Update.....
-	HAL_DMA_Init(&pulseGenOffDMATimer);        //Init with the DMA Update.....
-	pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
-	pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
-	__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
-	__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
+	HAL_TIM_PWM_Start(&pulseTimer1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&pulseTimer1, TIM_CHANNEL_2);
 	HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);     // Moves the Source Address Of IO that is high to the PIN
 	HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1);
 	return SushiSuccess;
@@ -143,7 +130,7 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
  */
 SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase){
 	//Enabled Needed Clock Signals for the Timer perhipreal
-	//deInitTimer1();                                                     //De-Init Timer 1
+	deInitTimer1();                                                     //De-Init Timer 1
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
@@ -160,6 +147,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
+	HAL_TIM_Base_Start(&pulseTimer1);                    //Stop the time base - Pulse Train Generator
 
 	return SushiSuccess;
 }
@@ -244,7 +232,7 @@ void signalGenCounter(uint16_t units){
 	//Setup the output channel
 	HAL_TIM_PWM_Init(&sigGenTimer1);                                      //Init the Timer but do no start the timer!
 	//Enable the output interupts for this timer,
-	//__HAL_TIM_ENABLE_IT(&sigGenTimer1,TIM_IT_UPDATE);
+	__HAL_TIM_ENABLE_IT(&sigGenTimer1,TIM_IT_UPDATE);
 	HAL_NVIC_SetPriority(TIM16_IRQn, 4, 1);
 	HAL_NVIC_EnableIRQ(TIM16_IRQn);
 }

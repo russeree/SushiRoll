@@ -82,15 +82,13 @@ int main(void){
 		}
 	}
 	else{
-		for(;;){ //Infinate State
-			HAL_Delay(1000);
-		}
+		for(;;){}
 	}
 }
 
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
-		setupPWM(&SushiTimer, sushiState.pwmTimeBase, 100 , 73);
+		setupPWM(&SushiTimer, sushiState.pwmTimeBase, 100, 100);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		gateDriveParallelPulseTimerInit();

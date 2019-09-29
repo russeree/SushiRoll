@@ -134,10 +134,6 @@ void TIM14_IRQHandler(void){
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
 		//I Dont know why I have to do this sequence to prevent a bounce high after the trigger
-		HAL_DMA_DeInit(&pulseGenOnDMATimer);       //Why de-init? Maybe to make sure all registers are reset
-		HAL_DMA_DeInit(&pulseGenOffDMATimer);      //Why de-init? Maybe to make sure all registers are rese
-		HAL_DMA_Init(&pulseGenOnDMATimer);         //Init with the DMA Update.....
-		HAL_DMA_Init(&pulseGenOffDMATimer);        //Init with the DMA Update.....
 		pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
 		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
 		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
@@ -155,10 +151,17 @@ void TIM16_IRQHandler(void){
 }
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
-	safetyToggle = 0;                   //Turn off the 'double-tap' safety
-	sushiDBGPin(31);
 	if(sushiState.sigGenMode == SignalModeTrigger){
-		HAL_TIM_Base_Stop(&pulseTimer1);    //Stop the timer
+		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop the timer
+		safetyToggle = 0;                          //Turn off the 'double-tap' safety
+	}
+	if(sushiState.sigGenMode == SignalModePWM){    //This enable the use of normal mode DMA -> forces the counter to otain more data
+		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);    //Diable the DMA -> Reset THE PENDING TRANSACTIONS
+		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);   //Diable the DMA -> Reset THE PENDING TRANSACTIONS
+		pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
+		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
+		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
+		__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
 	}
 	HAL_TIM_IRQHandler(&pulseTimer1);   //Handle the interupt
 }
@@ -195,9 +198,4 @@ void DMA1_Channel4_5_IRQHandler(void)
 	}
 	HAL_NVIC_ClearPendingIRQ(DMA1_Channel4_5_IRQn);
 }
-/* Flash Memory Operations Handler NOT USED */
-void FLASH_IRQHandler(void){
-	//Fill This with info
-}
-/* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

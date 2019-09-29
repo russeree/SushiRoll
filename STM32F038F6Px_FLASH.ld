@@ -16,8 +16,6 @@
 **
 **  Target      : STMicroelectronics STM32
 **
-**  Distribution: The file is distributed “as is,” without any warranty
-**                of any kind.
 **
 *****************************************************************************
 ** @attention
@@ -62,7 +60,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 4K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 32K
+FLASH (rx)     : ORIGIN = 0x8000000, LENGTH = 31K
+EEPROM(r)      : ORIGIN = 0x8007C00, LENGTH = 1K
 }
 
 /* Define output sections */
@@ -145,12 +144,6 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  /* USER EEPROM 1K PAGE IS EXCESSIVE BUT FOR THIS APPLICATION IT WILL HAVE TO DO */
-  .user_eeprom :
-  {
-    . = ALIGN(1024);
-    KEEP(*(.user_eeprom))
-  } > FLASH
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -168,6 +161,13 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  /* USER EEPROM 1K PAGE IS EXCESSIVE BUT FOR THIS APPLICATION IT WILL HAVE TO DO */
+  .user_eeprom :
+  {
+    . = ALIGN(1024);
+    KEEP(*(.user_eeprom))
+  } > EEPROM
+
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -178,7 +178,6 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
-
 
 
   /* Remove information from the standard libraries */

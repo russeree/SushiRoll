@@ -29,16 +29,16 @@ void gateDriverParallelDMATimerInit(void){
 	pulseGenOnDMATimer.Init.Direction            = DMA_MEMORY_TO_PERIPH;
 	pulseGenOnDMATimer.Init.MemDataAlignment     = DMA_MDATAALIGN_WORD;
 	pulseGenOnDMATimer.Init.MemInc               = DMA_MINC_DISABLE;
-	pulseGenOnDMATimer.Init.Mode                 = DMA_CIRCULAR;
+	pulseGenOnDMATimer.Init.Mode                 = DMA_NORMAL;
 	pulseGenOnDMATimer.Init.PeriphDataAlignment  = DMA_PDATAALIGN_WORD;
 	pulseGenOnDMATimer.Init.PeriphInc            = DMA_PINC_DISABLE;
-	pulseGenOnDMATimer.Init.Priority             = DMA_PRIORITY_VERY_HIGH;
+	pulseGenOnDMATimer.Init.Priority             = DMA_PRIORITY_HIGH;
 	//Setup the DMA Turn off timer Parameters
 	pulseGenOffDMATimer.Instance                 = DMA1_Channel3;
 	pulseGenOffDMATimer.Init.Direction           = DMA_MEMORY_TO_PERIPH;
 	pulseGenOffDMATimer.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 	pulseGenOffDMATimer.Init.MemInc              = DMA_MINC_DISABLE;
-	pulseGenOffDMATimer.Init.Mode                = DMA_CIRCULAR;
+	pulseGenOffDMATimer.Init.Mode                = DMA_NORMAL;
 	pulseGenOffDMATimer.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
 	pulseGenOffDMATimer.Init.PeriphInc           = DMA_PINC_DISABLE;
 	pulseGenOffDMATimer.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
@@ -71,7 +71,7 @@ void sushiBoardUARTDMAInit(void){
 	sushiUART1rx.Init.Mode                 = DMA_CIRCULAR;
 	sushiUART1rx.Init.PeriphDataAlignment  = DMA_PDATAALIGN_BYTE;
 	sushiUART1rx.Init.PeriphInc            = DMA_PINC_DISABLE;
-	sushiUART1rx.Init.Priority             = DMA_PRIORITY_HIGH;
+	sushiUART1rx.Init.Priority             = DMA_PRIORITY_MEDIUM;
 	/*Fire Up the DMA Engine for the UART RX and TX channels */
 	HAL_DMA_DeInit(&sushiUART1tx);  //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&sushiUART1tx);    //Init with the DMA Update.....
