@@ -123,6 +123,7 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
+	HAL_TIM_PWM_Start(&pulseTimer1)
 	/*DMA DRAMA */
 	HAL_DMA_DeInit(&pulseGenOnDMATimer);                                //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_DeInit(&pulseGenOffDMATimer);      //Why de-init? Maybe to make sure all registers are rese
@@ -159,7 +160,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
-	HAL_TIM_PWM_Start(&pulseTimer1)
+
 	return SushiSuccess;
 }
 
