@@ -29,7 +29,7 @@ void gateDriverParallelDMATimerInit(void){
 	pulseGenOnDMATimer.Init.Direction            = DMA_MEMORY_TO_PERIPH;
 	pulseGenOnDMATimer.Init.MemDataAlignment     = DMA_MDATAALIGN_WORD;
 	pulseGenOnDMATimer.Init.MemInc               = DMA_MINC_DISABLE;
-	pulseGenOnDMATimer.Init.Mode                 = DMA_NORMAL;
+	pulseGenOnDMATimer.Init.Mode                 = DMA_CIRCULAR;
 	pulseGenOnDMATimer.Init.PeriphDataAlignment  = DMA_PDATAALIGN_WORD;
 	pulseGenOnDMATimer.Init.PeriphInc            = DMA_PINC_DISABLE;
 	pulseGenOnDMATimer.Init.Priority             = DMA_PRIORITY_VERY_HIGH;
@@ -38,7 +38,7 @@ void gateDriverParallelDMATimerInit(void){
 	pulseGenOffDMATimer.Init.Direction           = DMA_MEMORY_TO_PERIPH;
 	pulseGenOffDMATimer.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
 	pulseGenOffDMATimer.Init.MemInc              = DMA_MINC_DISABLE;
-	pulseGenOffDMATimer.Init.Mode                = DMA_NORMAL;
+	pulseGenOffDMATimer.Init.Mode                = DMA_CIRCULAR;
 	pulseGenOffDMATimer.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
 	pulseGenOffDMATimer.Init.PeriphInc           = DMA_PINC_DISABLE;
 	pulseGenOffDMATimer.Init.Priority            = DMA_PRIORITY_VERY_HIGH;

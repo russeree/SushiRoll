@@ -57,28 +57,29 @@ typedef enum SushiStatus{
 	SushiBusy
 } SushiStatus;
 
-enum sigModeName {
+typedef enum sigModeName {
 	SignalModeTrigger,
 	SignalModePWM
-};
+} sigModeName;
 
-enum inputMatching {
+typedef enum inputMatching {
 	InputMatchingFalse,
 	InputMatchingTrue
-};
+} inputMatching;
 
 typedef struct SushiState{
 	int tOn;
 	int tOff;
 	int tPeriod;
 	int tDelay;
-	int inputMatching;
+	inputMatching inputMatching;
 	int tDebounce;
-	int sigGenMode;
+	sigModeName sigGenMode;
 	int pwmTimeBase;
 } volatile SushiState;
 
 void getSushiParameters(void);
+void setupTimerState(void);
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,6 @@ extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
 
 extern volatile uint8_t   dmaTXBusy;
-extern volatile uint32_t  sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 extern void sushiInputFetch(void);
 
@@ -130,7 +129,8 @@ void EXTI0_1_IRQHandler(void){
 }
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
-	if(1){
+	if((1) && (sushiState.sigGenMode == SignalModeTrigger))
+	{
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
 		//I Dont know why I have to do this sequence to prevent a bounce high after the trigger
@@ -156,7 +156,9 @@ void TIM16_IRQHandler(void){
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
 	safetyToggle = 0;                   //Turn off the 'double-tap' safety
-	HAL_TIM_Base_Stop(&pulseTimer1);    //Stop the timer
+	if(sushiState.sigGenMode == SignalModeTrigger){
+		HAL_TIM_Base_Stop(&pulseTimer1);    //Stop the timer
+	}
 	HAL_TIM_IRQHandler(&pulseTimer1);   //Handle the interupt
 }
 
