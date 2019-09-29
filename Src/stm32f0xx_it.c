@@ -156,6 +156,7 @@ void TIM16_IRQHandler(void){
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
 	safetyToggle = 0;                   //Turn off the 'double-tap' safety
+	sushiDBGPin(31);
 	if(sushiState.sigGenMode == SignalModeTrigger){
 		HAL_TIM_Base_Stop(&pulseTimer1);    //Stop the timer
 	}

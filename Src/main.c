@@ -39,16 +39,16 @@ char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Changes Require Restart\n\r> ";
 
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
-		6,      //Time on DEFAULT = 6US
-		10,     //Time off DEFAULT = 10US
-		1000,   //Period DEFAULT = 1MS period
-		100,    //Delay DEFAULT = 100US
-		InputMatchingFalse, //Do Not Match Inputs - Input matching overrides all Modes
-		5,      //5ms Debounce - Cherry MX Blues spec
-		SignalModePWM, //Sig-Gen Mode
-		TB_1US, //Default is a 1US Timeaose for a 16MHZ HSE Oscilator
-		0,
-		0       //these are not used
+		6,                    //Time on DEFAULT = 6US
+		10,                   //Time off DEFAULT = 10US
+		1000,                 //Period DEFAULT = 1MS period
+		100,                  //Delay DEFAULT = 100US
+		InputMatchingFalse,   //Do Not Match Inputs - Input matching overrides all Modes
+		5,                    //5ms Debounce - Cherry MX Blues spec
+		SignalModePWM,        //Sig-Gen Mode
+		TB_1US,               //Default is a 1US Timeaose for a 16MHZ HSE Oscilator
+		0,                    //UNUSED
+		0                     //UNUSED
 };
 
 volatile SushiState sushiState;
@@ -90,7 +90,7 @@ int main(void){
 
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
-		setupPWM(&SushiTimer, sushiState.pwmTimeBase, 0xFFFF, 73);
+		setupPWM(&SushiTimer, sushiState.pwmTimeBase, 100 , 73);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		gateDriveParallelPulseTimerInit();

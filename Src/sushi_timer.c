@@ -123,9 +123,8 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOff, TIM_CHANNEL_2);     //Turn off the BSSR on the Channel two output COmpare
-	HAL_TIM_Base_Start(&pulseTimer1);                                   //Fire up the timer for the Pulse
 	/*DMA DRAMA */
-	HAL_DMA_DeInit(&pulseGenOnDMATimer);       //Why de-init? Maybe to make sure all registers are reset
+	HAL_DMA_DeInit(&pulseGenOnDMATimer);                                //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_DeInit(&pulseGenOffDMATimer);      //Why de-init? Maybe to make sure all registers are rese
 	HAL_DMA_Init(&pulseGenOnDMATimer);         //Init with the DMA Update.....
 	HAL_DMA_Init(&pulseGenOffDMATimer);        //Init with the DMA Update.....
@@ -143,7 +142,7 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
  */
 SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase){
 	//Enabled Needed Clock Signals for the Timer perhipreal
-	deInitTimer1();                                                     //De-Init Timer 1
+	//deInitTimer1();                                                     //De-Init Timer 1
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
@@ -154,12 +153,13 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 	pulseTimer1.Init.RepetitionCounter = 0;                              //Use A Repetition Counter
 	pulseTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; //Shadow Mask.... Just enable it
 	//The order and events may change in the future for now this is proof of concept.
-	//__HAL_TIM_ENABLE_IT(&pulseTimer1, TIM_IT_UPDATE);                   //TIMER INTERUPT UPDATE START
+	__HAL_TIM_ENABLE_IT(&pulseTimer1, TIM_IT_UPDATE);                   //TIMER INTERUPT UPDATE START
 	//sET THE INTERUPT ROUTINE PRIORITY
 	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
 	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
+	HAL_TIM_PWM_Start(&pulseTimer1)
 	return SushiSuccess;
 }
 
