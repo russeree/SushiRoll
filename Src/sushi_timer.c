@@ -7,7 +7,6 @@
  */
 
 #include "sushi_timer.h"
-
 //extern volatile uint8_t sigMode;                                       // The signal timebase mode
 
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
@@ -43,17 +42,15 @@ SushiStatus setupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float d
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	TC->mode = PWM;
-	 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	 HAL_Delay(2);
-	 HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+	HAL_Delay(2);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	/* First Check and see if we can just do a direct input into the timer */
 	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-		HAL_Delay(15);
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+		sushiDBGPin(1);
 		uint16_t dutyCyclePulse = (dutyCycle/100)*units;
 		sushiTimeBaseInit(TC, units, timebase); //Begin the Timebase generation Loop
-		sushiPWMBaseInit(TC, dutyCyclePulse);
+		sushiPWMBaseInit(TC, dutyCyclePulse);   //Begin the PWM Setup
 		return SushiSuccess;                    //This loop is already done, everything fits so everythin is easy
 	}
 	else{

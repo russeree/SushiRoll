@@ -113,6 +113,16 @@ void getSushiParameters(void){
 }
 
 /**
+ * @desc Toggles Pin One With a High Value for the time arg in MS
+ */
+
+void sushiDBGPin(int time){
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+	HAL_Delay(time - 1);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+}
+
+/**
   * @brief System Clock Configuration
   * @retval None
   */

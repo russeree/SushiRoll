@@ -78,6 +78,8 @@ typedef struct SushiState{
 	int pwmTimeBase;
 } volatile SushiState;
 
+/* Debugging functions */
+void sushiDBGPin(int time);
 void getSushiParameters(void);
 void setupTimerState(void);
 
