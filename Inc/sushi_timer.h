@@ -60,11 +60,13 @@ SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switchi
 void signalGenCounter(uint16_t timeMS); // Determines the time to repeat the signal... for longer runs
 void gateDriveParallelPulseTimerInit(void); // Init a timer designed to trigger all MOSFETs at one time.
 void switchInputDebouceTimerInit(uint16_t timeMS);  // This time controls the deboucing timer.
-SushiStatus sushiPWMBaseInit( TimerConfig *TC, uint16_t pulseCount);
-SushiStatus sushiTimeBaseInit( TimerConfig *TC, uint16_t period, TimeBase timebase); // PWM Continious Initialization
-
+SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount);
+SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase); // PWM Continious Initialization
+/* De-Initialization Function */
+SushiStatus sushiTIM1DeinitPWM(void);
+SushiStatus sushiTIM1BaseDeinit(void);
 /* SAL Sushi Abstraction Layer */
-SushiStatus setupPWM( TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
+SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
 
 extern SushiState sushiState;
 extern TimerConfig SushiTimer;

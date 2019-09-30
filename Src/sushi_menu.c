@@ -172,6 +172,9 @@ void sushiInputFetch(void){
 				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
 				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
 				break;
+			case 0x70: // 'p' Activates Switches to PWM Mode Continious
+				//sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
+				break;
 			case 0x61: // 'a' Applies the changes made in ram - does not save them
 				applyChanges(); //Applies the Changes
 				break;

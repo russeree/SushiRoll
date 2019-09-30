@@ -38,7 +38,7 @@ void SystemClock_Config(void);
 char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Changes Require Restart\n\r> ";
 
-__attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] = {
+__attribute__((section(".user_eeprom"))) const uint32_t flashParameters[15] = {
 		6,                    //Time on DEFAULT = 6US
 		10,                   //Time off DEFAULT = 10US
 		1000,                 //Period DEFAULT = 1MS period
@@ -47,9 +47,19 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[10] =
 		5,                    //5ms Debounce - Cherry MX Blues spec
 		SignalModePWM,        //Sig-Gen Mode
 		TB_1US,               //Default is a 1US Timeaose for a 16MHZ HSE Oscilator
-		0,                    //UNUSED
-		0                     //UNUSED
+		0,                    //Default Counts Fist 32 bits
+		1000,                 //Default Counts Last 32 bit
+		0,                    //Not Used Yet
+		0,                    //Not Used Yet
+		0,                    //Not Used Yet
+		0,                    //Not Used Yet
+		0                     //Not USed Yet
 };
+
+__attribute__((section(".user_eeprom"))) const float flashFloatParameters[1] = {
+		50.0                  //Deafault Float Value
+};
+
 
 volatile SushiState sushiState;
 
@@ -88,7 +98,7 @@ int main(void){
 
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
-		setupPWM(&SushiTimer, sushiState.pwmTimeBase, 2, 50);
+		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		gateDriveParallelPulseTimerInit();
@@ -99,15 +109,20 @@ void setupTimerState(void){
 /**
  * @desc: Read from EEPROM SushiboardsConfiguration Patterns
  */
+extern TimerConfig SushiTimer;
 void getSushiParameters(void){
 	sushiState.tOn           = (uint32_t)flashParameters[0];
 	sushiState.tOff          = (uint32_t)flashParameters[1];
 	sushiState.tDelay        = (uint32_t)flashParameters[2];
-	sushiState.tPeriod       = (uint32_t)flashParameters[3]; //FIXED - SWAPED Period and Delay on Boot
+	sushiState.tPeriod       = (uint32_t)flashParameters[3];   //FIXED - SWAPED Period and Delay on Boot
 	sushiState.inputMatching = (uint32_t)flashParameters[4];
 	sushiState.tDebounce     = (uint32_t)flashParameters[5];
-	sushiState.sigGenMode    = (uint32_t)flashParameters[6]; //Added a signal generator mode;
-	sushiState.pwmTimeBase   = (uint32_t)flashParameters[7]; //Added the ability to grab a timebase value from sushiboard
+	sushiState.sigGenMode    = (uint32_t)flashParameters[6];   //Added a signal generator mode;
+	sushiState.pwmTimeBase   = (uint32_t)flashParameters[7];   //Added the ability to grab a timebase value from sushiboard
+	SushiTimer.dutyCycle     = (float)flashFloatParameters[0];
+	SushiTimer.counts        = (uint32_t)flashParameters[8];
+	SushiTimer.counts        = SushiTimer.counts << 32;        //This operend is needed because of the 64 bit nature of the Counts Variable
+	SushiTimer.counts       |= (uint32_t)flashParameters[9];
 }
 
 /**
