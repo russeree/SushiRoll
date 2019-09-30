@@ -1,5 +1,8 @@
 # SUSHIBOARD FIRMWARE - PARALLEL IGBT DRIVER
-Based on the STM32F03 MCU this firmware source code is well documented and should be able to help users who are looking to use more advanced features of the STM32F0 platform. This project incorporates FLASH Writing - DMA UART - DMA Timers - Interrupts, EXIT, and much more. 
+Based on the STM32F03 MCU this firmware source code is well documented and should be able to help users who are looking to use more advanced features of the STM32F0 platform. This project incorporates FLASH Writing - DMA UART - DMA Timers - Interrupts, EXTI, and much more. 
+
+## INSTRUCTIONS 
+Open the project file using the STM32 Studio (AC6). This build works on Windows and Mac versions. Nothing special is required. Hardware required to flash this frimware is the STM32F031F6P7TR MCU. These can be obtained on Mouser.com or Digikey.com for about 2 USD, The variant used for this project has 4KB SRAM; There are 6KB SRAM versions in the same package. 
 
 ## Why the name Sushiboard?
 Sushibaord started about as an idea for a IGBT controlled xenon Flash. Where the goal is to quench the flash almost instantaneously after triggering on the order of one microsecond. As well as creating a method to PWM a xenon flash as to allow a more uniform flash intensity when using fast shutter speeds with a focal plane shutter. *ex. 1/2000, 1/4000, 1/8000 second shutter speeds* The reason for a parallel IGBT driver being needed for this application is the incredibly intense surge current through a flashtube. Current values as large as 700 amps have been measured across a 400 joule flash lamp. Overall the need was a high power low side switch.
