@@ -33,18 +33,20 @@ extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE]; //Receviving Buffer
  */
 
 /* SushiBoard Magic Text Values to be used by SushiOS !!!NOTE!!! If you are running out of space there would be optimization to be done here.*/
-const char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
-const char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0 - SELECT AN ITEM TO MODIFY\n\r";
-const char sushiMenuInputCursor[]          = "> ";
-const char sushiMenuInputTonText[]         = "\n\rEnter the maximum pulse time on in uS\n\r";
-const char sushiMenuInputToffText[]        = "\n\rEnter the minimum pulse time off in uS\n\r";
-const char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from the trigger in uS\n\r";
-const char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
-const char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
-const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
-const char sushiShowTonText[]              = "Ton Value is: ";
-const char sushiShowToffText[]             = "Toff Value is: ";
-const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r[t] Trigger Sushiboard.\n\r[a] Apply Changes.\n\r[p] Set PWM Mode.\n\r[c] Set Trigger Mode.\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0 - SELECT AN ITEM TO MODIFY\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputCursor[]          = "> ";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputTonText[]         = "\n\rEnter the maximum pulse time on in uS\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputToffText[]        = "\n\rEnter the minimum pulse time off in uS\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from the trigger in uS\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputMatchingOnText[]  = "SushiBoard will now match inputs. Remember to SAVE CHANGES\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filter inputs. Remember to SAVE CHANGES\n\r";
+__attribute__((section(".user_eeprom"))) const char sushiShowTonText[]              = "Ton Value is: ";
+__attribute__((section(".user_eeprom"))) const char sushiShowToffText[]             = "Toff Value is: ";
+__attribute__((section(".user_eeprom"))) const char sushiMenuItemsText[]            = "\n\r[1] Set Maximum Pulse Ton (uS)\n\r[2] Set Minimum Delay between Pulses (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the external switch debounce time.\n\r[t] Trigger Sushiboard.\n\r[a] Apply Changes.\n\r[p] Set PWM Mode.\n\r[c] Set Trigger Mode.\n\r";
+
+/* These text items will get placed into some other locations in memory */
 const char sushiShowTdelayText[]           = "Tdelay Value is: ";
 const char sushiShowTperiodText[]          = "Tperiod Value is: ";
 const char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
@@ -56,8 +58,6 @@ const char sushiSetDeounceTimeText[]       = "\n\rEnter the need switch debounce
 const char sushiMaxInputLenText[]          = " -> !!!MAX INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
 const char sushiTriggerExeText[]           = "\n\rTrigger successful.\n\r";
 const char sushiApplyText[]                = "\n\rChanges Applied - NOT WRITTEN TO FLASH\n\r>";
-
-/* Other Misc text items used for formatting */
 const char sushiTrueText[]                 = "True ";
 const char sushiFalseText[]                = "False ";
 const char sushiNewLineReturn[]            = "\n\r";

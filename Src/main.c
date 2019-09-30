@@ -1,38 +1,22 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @Auth: Reese Russell
+ * @desc: Sushi Board Main OS - TIMERS - PWM - DMA - UART - EXTI and MORE
+ **/
 
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "gpio.h"
 
 #include "sushi.h"       //Sushi Board Global Defines
 #include "sushi_dma.h"   //Sushi Board DMA Configuration
 #include "sushi_timer.h" //Sushi Board Timer Configuration
-#include "sushi_uart.h"  //Sushi Board UART Configuarion
+#include "sushi_uart.h"  //Sushi Board UART Configuration
 #include "sushi_menu.h"  //Sushi Board OS
 #include "sushi_flash.h" //Sushi Board Flash Memory Interface
 
 /**
  * @Bugs to Fix
- * 1. Tigger fire on device power up
- */
+ * 1. PWM/Tigger and Input Matching Modes.
+ **/
 void SystemClock_Config(void);
 
 char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
@@ -46,7 +30,7 @@ __attribute__((section(".user_eeprom"))) const uint32_t flashParameters[15] = {
 		InputMatchingFalse,   //Do Not Match Inputs - Input matching overrides all Modes
 		5,                    //5ms Debounce - Cherry MX Blues spec
 		SignalModePWM,        //Sig-Gen Mode
-		TB_1US,               //Default is a 1US Timeaose for a 16MHZ HSE Oscilator
+		TB_1US,               //Default is a 1US Timebose for a 16MHZ HSE Oscillator
 		0,                    //Default Counts Fist 32 bits
 		1000,                 //Default Counts Last 32 bit
 		0,                    //Not Used Yet
@@ -60,33 +44,33 @@ __attribute__((section(".user_eeprom"))) const float flashFloatParameters[1] = {
 		50.0                  //Deafault Float Value
 };
 
+__attribute__((section(".user_eeprom"))) const char author[] = "Reese Russell";
 
 volatile SushiState sushiState;
 
-volatile uint8_t sigMode;         //Signal Modes 0 = Manual Tigger, 1 = Continious, 2 = run for a certain number of cycles;
+volatile uint8_t  sigMode;        //Signal Modes 0 = Manual Tigger, 1 = Continuous, 2 = run for a certain number of cycles;
 volatile uint32_t sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 int main(void){
-	HAL_NVIC_SetPriority(SysTick_IRQn, 5, 0); //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be gaureenteed
+	HAL_NVIC_SetPriority(SysTick_IRQn, 5, 0);                //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be guaranteed
 	/* HAL Inits */
-	HAL_Init();
-	SystemClock_Config();
+	HAL_Init();                                              //Init the HAL Layer
+	SystemClock_Config();                                    //Init the System Clocks
 	/* SUSHIBOARD PARAMETERS AND INIT */
-	getSushiParameters(); //Read out the Data in the Stored EEPROM in the RAM for Use;
+	getSushiParameters();                                    //Read out the Data in the Stored EEPROM in the RAM for Use;
 	/* Initialize the GATE DRIVERS and IO*/
-	MX_GPIO_Init();
-	gateDriverParallelDMATimerInit();
-	/* Initialize the UART MENU SYSTEM */
-	sushiBoardUARTDMAInit();
-	initSushiBoardUART();
+	MX_GPIO_Init();                                          //Init the GPIO please lol at "gpio.c" for more info.
+	gateDriverParallelDMATimerInit();                        //Init the DMA for gate drive timers.
+	/* Init Sushiboard and Subsystem */
+	sushiBoardUARTDMAInit();                                 //Init the UART subsystem for sushibaord DMA COMPONETS
+	initSushiBoardUART();                                    //Init the UART susystem
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
-	/* Setup the Trigger Mode */
-	setupTimerState();
+	setupTimerState();                                       //Determine the state of operations PWM or Trigger -> Input Matching will override all in the end.
 	/* Main Loop: No Code all Interupt Driven*/
-	if (sushiState.inputMatching == InputMatchingTrue){ // If you are matching inputs then just take the input pin and
+	if (sushiState.inputMatching == InputMatchingTrue){      //If you are matching inputs then just take the input pin and
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInputMatchingText, sizeof(sushiInputMatchingText));
-		HAL_NVIC_DisableIRQ(EXTI0_1_IRQn); // Turn off the IRQ we dont need any timer intervention here
-		for(;;){                           // Now you just match the Inputs until the device reboots. INFINATE LOOP
+		HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);                   //Turn off the IRQ we dont need any timer intervention here
+		for(;;){                                             //Now you just match the Inputs until the device reboots. INFINATE LOOP
 			if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){GPIOB->BSRR = (0x001B);}
 			else{GPIOB->BSRR = (0x001B << 16);}
 		}
@@ -97,7 +81,7 @@ int main(void){
 }
 
 /**
- * @desc: Determine the state of operations. PWM or Triggered
+ * @desc: Determine the state of operations. PWM or Triggered.
  */
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
@@ -131,7 +115,6 @@ void getSushiParameters(void){
 /**
  * @desc Toggles Pin One With a High Value for the time arg in MS
  */
-
 void sushiDBGPin(int time){
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	HAL_Delay(time - 1);
@@ -158,8 +141,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
+  /* Initializes the CPU, AHB and APB busses clocks */
   RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK |RCC_CLOCKTYPE_PCLK1;
   RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
