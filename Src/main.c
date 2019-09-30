@@ -96,6 +96,9 @@ int main(void){
 	}
 }
 
+/**
+ * @desc: Determine the state of operations. PWM or Triggered
+ */
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
 		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
@@ -141,19 +144,16 @@ void sushiDBGPin(int time){
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct   = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct   = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
+  /* Initializes the CPU, AHB and APB busses clocks */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState       = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource  = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL     = RCC_PLL_MUL3;
   RCC_OscInitStruct.PLL.PREDIV     = RCC_PREDIV_DIV1;
-
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
