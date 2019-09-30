@@ -47,7 +47,7 @@ typedef struct TimerConfig{
 	uint64_t  counts;          //The number of total counts of a Timebase unit needed to complete a period
 	volatile uint64_t  count;  //Current Count Number
 	uint64_t  pwmCount;        //The PWM Value that is stored
-	double    dutyCycle;       //For the PWM mode select a duty cycle to use... This is adjustable
+	float    dutyCycle;       //For the PWM mode select a duty cycle to use... This is adjustable
 	uint16_t  tOn_Tigger;      //Time @ which the DMA event fires for channel 2 -> Usualy used to set the BSR High
 	uint16_t  tOff_Trigger;    //Time @ which the DMA event fires for channel 3 -> Usyaly used to set the BSR Low !!! Not used for PWM modes
 	volatile uint16_t  remainingCycles; //How many cycles are left over before completing a cycle

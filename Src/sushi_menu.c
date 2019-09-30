@@ -26,7 +26,9 @@ int sushiMenuStatePrevious = 0; // 0 is the default menu state;
 int sushiMenuState = 0;         // Last state the menu was in this is used for the modification of the internal variables;
 
 volatile uint8_t dmaTXBusy = 0; // 0 uartDMA RX IS NOT DONE
+
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE]; //Receviving Buffer
+extern TimerConfig SushiTimer;
 
 /**
  * @FIX: Consistency between newline call is hoible... some strings start with them others end, some just call a function when it's needed. It's pretty bad and needs to be fixed
@@ -173,7 +175,7 @@ void sushiInputFetch(void){
 				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
 				break;
 			case 0x70: // 'p' Activates Switches to PWM Mode Continious
-				//sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
+				sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
 				break;
 			case 0x61: // 'a' Applies the changes made in ram - does not save them
 				applyChanges(); //Applies the Changes
