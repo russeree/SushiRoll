@@ -21,6 +21,35 @@ uint32_t swOff[1] = {0x001B << 16}; //For use by DMA to push this onto the BSSR 
 
 extern UART_HandleTypeDef sushiUART; //External instance of UART to link to the  DMA channels 4/5
 
+SushiStatus dmaPWMenableTimer1(void){
+	HAL_DMA_Abort(&pulseGenOnDMATimer);
+	HAL_DMA_Abort(&pulseGenOffDMATimer);
+	//Lets do Some Fun Stuff Here... DAM CC1 and 2 Events -> send the data to the BSSR registers for a pulse on and off
+	pulseGenOnDMATimer.Instance                  = DMA1_Channel2;
+	pulseGenOnDMATimer.Init.Direction            = DMA_MEMORY_TO_PERIPH;
+	pulseGenOnDMATimer.Init.MemDataAlignment     = DMA_MDATAALIGN_WORD;
+	pulseGenOnDMATimer.Init.MemInc               = DMA_MINC_DISABLE;
+	pulseGenOnDMATimer.Init.Mode                 = DMA_CIRCULAR;
+	pulseGenOnDMATimer.Init.PeriphDataAlignment  = DMA_PDATAALIGN_WORD;
+	pulseGenOnDMATimer.Init.PeriphInc            = DMA_PINC_DISABLE;
+	pulseGenOnDMATimer.Init.Priority             = DMA_PRIORITY_HIGH;
+	//Setup the DMA Turn off timer Parameters
+	pulseGenOffDMATimer.Instance                 = DMA1_Channel3;
+	pulseGenOffDMATimer.Init.Direction           = DMA_MEMORY_TO_PERIPH;
+	pulseGenOffDMATimer.Init.MemDataAlignment    = DMA_MDATAALIGN_WORD;
+	pulseGenOffDMATimer.Init.MemInc              = DMA_MINC_DISABLE;
+	pulseGenOffDMATimer.Init.Mode                = DMA_CIRCULAR;
+	pulseGenOffDMATimer.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+	pulseGenOffDMATimer.Init.PeriphInc           = DMA_PINC_DISABLE;
+	pulseGenOffDMATimer.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
+	//Fire up the DMA ENGINE
+	HAL_DMA_DeInit(&pulseGenOnDMATimer);  //Why de-init? Maybe to make sure all registers are reset
+	HAL_DMA_Init(&pulseGenOnDMATimer);    //Init with the DMA Update.....
+	HAL_DMA_DeInit(&pulseGenOffDMATimer); //Why de-init? Maybe to make sure all registers are reset
+	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
+	return SushiSuccess;
+}
+
 // DMA Timer Initialize
 void gateDriverParallelDMATimerInit(void){
 	__HAL_RCC_DMA1_CLK_ENABLE();

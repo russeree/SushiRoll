@@ -149,19 +149,14 @@ void TIM14_IRQHandler(void){
 void TIM16_IRQHandler(void){
 	HAL_TIM_IRQHandler(&sigGenTimer1);
 }
+
 /* At the end of each period break the software safety */
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
-	if(sushiState.sigGenMode == SignalModeTrigger){
+	if(sushiState.sigGenMode == SignalModeTrigger){//Use this routine when using the Manual Trigger Mode
 		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop the timer
 		safetyToggle = 0;                          //Turn off the 'double-tap' safety
 	}
 	if(sushiState.sigGenMode == SignalModePWM){    //This enable the use of normal mode DMA -> forces the counter to otain more data
-		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);    //Diable the DMA -> Reset THE PENDING TRANSACTIONS
-		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);   //Diable the DMA -> Reset THE PENDING TRANSACTIONS
-		pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
-		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
-		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
-		__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
 	}
 	HAL_TIM_IRQHandler(&pulseTimer1);   //Handle the interupt
 }
