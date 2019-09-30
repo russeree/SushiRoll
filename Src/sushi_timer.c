@@ -49,7 +49,7 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 		uint16_t dutyCyclePulse = (dutyCycle/100)*units;
 		sushiTimeBaseInit(TC, units, timebase); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);   //Begin the PWM Setup
-		return SushiSuccess;                    //This loop is already done, everything fits so everythin is easy
+		return SushiSuccess;                    //This loop is already done, everything fits so everything is easy
 	}
 	else{
 		/* Calculate the number of cycles needed for a complete period */
@@ -79,7 +79,7 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 			TC->longP = LP_False; //LP False Means that the timer can handle the loop internally and there is no need for interrupt based time keeping
 		}
 		else{
-			TC->longP = LP_True; //LP True means that the interupt handler must take care of the PWM generation
+			TC->longP = LP_True; //LP True means that the interrupt handler must take care of the PWM generation
 		}
 		/* NOW WE GENERATE THE IDEAL SIGNAL - First is lets use the best prescaler value for our timer is there is no long pulse needed */
 		if(TC->longP == LP_False){
@@ -103,7 +103,7 @@ SushiStatus sushiTIM1DeinitPWM(void){
 }
 
 /**
- * @Desc: Sushiboard Continious PWM De-Initalization
+ * @Desc: Sushiboard Continuous PWM De-Initalization
  */
 SushiStatus sushiTIM1BaseDeinit(void){
 	__HAL_RCC_TIM1_CLK_DISABLE();
@@ -116,19 +116,19 @@ SushiStatus sushiTIM1BaseDeinit(void){
 }
 
 /**
- * @Desc: Sushibaord Continious PWM Mode PWM Signal Configuration
+ * @Desc: Sushibaord Continuous PWM Mode PWM Signal Configuration
  */
 SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 	sushiTIM1DeinitPWM();                                               //Disable the PWM functions on sushibaord
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//Setup the On Timer Channel Outputs
-	tcOn.Pulse        = (uint16_t)0x0000;                               //Time before the DMA requst is sent to the BSRR to turn on the switching GPIO
+	tcOn.Pulse        = (uint16_t)0x0000;                               //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
 	tcOn.OCFastMode   = TIM_OCFAST_DISABLE;                             //No need for fast mode
 	tcOn.OCMode       = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	tcOn.OCPolarity   = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
 	tcOn.OCNPolarity  = TIM_OCNPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
-	tcOff.Pulse       = (uint16_t)pulseCount;                           //Time before the DMA requst is sent to the BSRR to turn off the switching GPIO
+	tcOff.Pulse       = (uint16_t)pulseCount;                           //Time before the DMA request is sent to the BSRR to turn off the switching GPIO
 	tcOff.OCFastMode  = TIM_OCFAST_DISABLE;                             //No need for fast mode
 	tcOff.OCMode      = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	tcOff.OCPolarity  = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
@@ -146,7 +146,7 @@ SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 }
 
 /**
- * @Desc: Sushiboard Continious PWM Mode Timebase - Adding an Easy Update Function - USING TIMER 1 - CHANNEL ONE AND UPDATE
+ * @Desc: Sushiboard Continuous PWM Mode Timebase - Adding an Easy Update Function - USING TIMER 1 - CHANNEL ONE AND UPDATE
  */
 SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase){
 	//Enabled Needed Clock Signals for the Timer perhipreal
@@ -164,7 +164,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 	__HAL_TIM_ENABLE_IT(&pulseTimer1, TIM_IT_UPDATE);                   //TIMER INTERUPT UPDATE START
 	//sET THE INTERUPT ROUTINE PRIORITY
 	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
-	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
+	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interrupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_Base_Start(&pulseTimer1);                                   //Stop the time base - Pulse Train Generator
@@ -177,7 +177,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
  */
 void gateDriveParallelPulseTimerInit(void){                             // 10ms Period
 	uint16_t usPrescaler = (HSE_VALUE * 3 / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
-	//Enabled Needed Clock Signals for the Timer perhipreal
+	//Enabled Needed Clock Signals for the Timer peripheral
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
@@ -188,13 +188,13 @@ void gateDriveParallelPulseTimerInit(void){                             // 10ms 
 	pulseTimer1.Init.RepetitionCounter = 0;                             //No repition. Just run in a loop
 	pulseTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; //Shadow Mask.... Just enable it
 	//Setup the On Timer Channel Outputs
-	tcOn.Pulse        = (uint16_t)sushiState.tOn;                       //Time before the DMA requst is sent to the BSRR to turn on the switching GPIO
+	tcOn.Pulse        = (uint16_t)sushiState.tOn;                       //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
 	tcOn.OCFastMode   = TIM_OCFAST_DISABLE;                             //No need for fast mode
 	tcOn.OCMode       = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	tcOn.OCPolarity   = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
 	tcOn.OCNPolarity  = TIM_OCNPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
 	//Setup the On Timer Channel Outputs
-	tcOff.Pulse       = (uint16_t)sushiState.tOff;                      //Time before the DMA requst is sent to the BSRR to turn off the switching GPIO
+	tcOff.Pulse       = (uint16_t)sushiState.tOff;                      //Time before the DMA request is sent to the BSRR to turn off the switching GPIO
 	tcOff.OCFastMode  = TIM_OCFAST_DISABLE;                             //No need for fast mode
 	tcOff.OCMode      = TIM_OCMODE_PWM1;                                //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	tcOff.OCPolarity  = TIM_OCPOLARITY_HIGH;                            //Doesn't matter but lets make the output compare polarity high
@@ -204,8 +204,8 @@ void gateDriveParallelPulseTimerInit(void){                             // 10ms 
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
 	__HAL_TIM_ENABLE_DMA(&pulseTimer1, TIM_DMA_CC2);                    //Capture Compare 2 Event (User event, This may not be used)
 	//sET THE INTERUPT ROUTINE PRIORITY
-	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interupts .... Not using them Now; This project uses DMA GPIO
-	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interupt
+	HAL_NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 3, 0);               //Interrupts .... Not using them Now; This project uses DMA GPIO
+	HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Enable the Interrupt
 	//Start Running it;
 	HAL_TIM_PWM_Init(&pulseTimer1);                                     //Init the PWM Timer
 	HAL_TIM_PWM_ConfigChannel(&pulseTimer1, &tcOn, TIM_CHANNEL_1);      //Turn on the BSSR on the Channel one output Compare
@@ -221,21 +221,21 @@ void switchInputDebouceTimerInit(uint16_t timeMS){
 	//Enable the Clock for timer 14
 	__HAL_RCC_TIM14_CLK_ENABLE();                                           //Number of cycles to generate 1m_pulses/sec
 	debounceTimer1.Instance = TIM14;                                        //Timer 14 will be used
-	debounceTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shawdow register on the next UE
+	debounceTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Auto-Preload the shadow register on the next UE
 	debounceTimer1.Init.ClockDivision     = TIM_CLOCKPRESCALER_DIV1;        //No Clock Division
 	debounceTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //Counter is counting up
 	debounceTimer1.Init.Prescaler         = usPrescaler;                    //1us tick
 	debounceTimer1.Init.Period            = timeMS;                         //1ms Period * Debounce time
 	//Setup the output channel
 	HAL_TIM_PWM_Init(&debounceTimer1);                                      //Init the Timer but do no start the timer!
-	//Enable the output interupts for this timer,
+	//Enable the output interrupts for this timer,
 	__HAL_TIM_ENABLE_IT(&debounceTimer1, TIM_IT_UPDATE);
 	HAL_NVIC_SetPriority(TIM14_IRQn, 4, 0);
 	HAL_NVIC_EnableIRQ(TIM14_IRQn);
 }
 
 /**
- * @desc: This timer is used to keep track of a timed repition of events AKA run for this ammount of time;
+ * @desc: This timer is used to keep track of a timed repition of events AKA run for this amount of time;
  */
 void signalGenCounter(uint16_t units){
 	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1; //This is the prescaler needed to get a 1uS per tick counter on this device
@@ -249,7 +249,7 @@ void signalGenCounter(uint16_t units){
 	sigGenTimer1.Init.Period            = 1000 * units;                   //1ms Period * Debounce time
 	//Setup the output channel
 	HAL_TIM_PWM_Init(&sigGenTimer1);                                      //Init the Timer but do no start the timer!
-	//Enable the output interupts for this timer,
+	//Enable the output interrupts for this timer,
 	__HAL_TIM_ENABLE_IT(&sigGenTimer1,TIM_IT_UPDATE);
 	HAL_NVIC_SetPriority(TIM16_IRQn, 4, 1);
 	HAL_NVIC_EnableIRQ(TIM16_IRQn);

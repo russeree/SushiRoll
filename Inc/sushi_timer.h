@@ -19,12 +19,12 @@ typedef enum TimeBase{
 	TB_1S  = 0xFFFFFFFF                            // This just has to be a value that the other 3 are not
 } TimeBase;
 /**
- * If the timebase is equal to 1 second -> set to 255 so that the Repition Counter knows when to stop,
+ * If the timebase is equal to 1 second -> set to 255 so that the repetition counter Counter knows when to stop,
  * this uses more cycles than a 16bit integer can hold so you have to use the repition counter....
  **/
 
 /**
- * @desc: Modes of operation for Sushiboard - PWM continious - and manualy triggered
+ * @desc: Modes of operation for Sushiboard - PWM continuous - and manually triggered
  */
 typedef enum TimerMode{
 	PWM,
@@ -32,7 +32,7 @@ typedef enum TimerMode{
 }TimerMode;
 
 /**
- * @Desc: LP False Means that the long pulse is disabled, the long pulse means the the interupt routine keeps track of the
+ * @Desc: LP False Means that the long pulse is disabled, the long pulse means the the interrupt routine keeps track of the
  * state of time in terms of units, this allows for very long duty cycles and trigger sequences.
  */
 typedef enum LongPulse{
@@ -40,6 +40,9 @@ typedef enum LongPulse{
 	LP_True
 }LongPulse;
 
+/**
+ * @desc: This struct contains a bunch of stuff needed for the usage of the PWM timers and such, also used in interrupts
+ */
 typedef struct TimerConfig{
 	TimerMode mode;            //What mode is the Counter Running In
 	TimeBase  tb;              //For PWM what is the timebase being used to derive the longer shrot pulses
