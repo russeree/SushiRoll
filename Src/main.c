@@ -31,8 +31,8 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] =
 		5,                    //5ms Debounce - Cherry MX Blues spec
 		SignalModePWM,        //Sig-Gen Mode
 		TB_1US,               //Default is a 1US Timebose for a 16MHZ HSE Oscillator
-		0,                    //Default Counts Fist 32 bits
 		1000,                 //Default Counts Last 32 bit
+		0,                    //NOT USED FOR NOW - WHEN 64 BIT PULSES ARRAIVE
 		0,                    //Not Used Yet
 		0,                    //Not Used Yet
 		0,                    //Not Used Yet
@@ -40,7 +40,7 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] =
 		0                     //Not USed Yet
 };
 
-__attribute__((section(".user_eeprom"))) volatile float flashFloatParameters[1] = {
+__attribute__((section(".user_eeprom"))) float flashFloatParameters[1] = {
 		50.1                  //Deafault Float Value
 };
 
@@ -106,8 +106,6 @@ void getSushiParameters(void){
 	sushiState.pwmTimeBase   = (uint32_t)flashParameters[7];   //Added the ability to grab a timebase value from sushiboard
 	SushiTimer.dutyCycle     = (float)flashFloatParameters[0];
 	SushiTimer.counts        = (uint32_t)flashParameters[8];
-	SushiTimer.counts        = SushiTimer.counts << 32;        //This operend is needed because of the 64 bit nature of the Counts Variable
-	SushiTimer.counts       |= (uint32_t)flashParameters[9];
 }
 
 /**

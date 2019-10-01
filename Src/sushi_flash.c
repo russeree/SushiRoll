@@ -31,6 +31,7 @@ void writeDataToPage(void){
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 20, (uint32_t)sushiState.tDebounce);      //Finaly Write the Last bit of Data... The chip is free to go
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 24, (uint32_t)sushiState.sigGenMode);     //Finaly Write the Last bit of Data... The chip is free to go
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 28, (uint32_t)sushiState.pwmTimeBase);    //Save the PWM mode timebase Counter
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashParameters + 32, (uint32_t)SushiTimer.counts);         //Save the PWM mode timebase Counter
 	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)&flashFloatParameters + 0, *(uint32_t *)&SushiTimer.dutyCycle);    //Save the PWM mode timebase Counter
 	CLEAR_BIT (FLASH->CR, (FLASH_CR_PG)); //Clear the flash programming bits before unlocking again
 	HAL_FLASH_Lock();
