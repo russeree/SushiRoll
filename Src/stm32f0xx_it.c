@@ -129,7 +129,7 @@ void EXTI0_1_IRQHandler(void){
 }
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
-	if((1) && (sushiState.sigGenMode == SignalModeTrigger))
+	if(0) && (sushiState.sigGenMode == SignalModeTrigger))
 	{
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
