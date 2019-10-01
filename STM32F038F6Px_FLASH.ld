@@ -166,7 +166,7 @@ SECTIONS
   {
     . = ALIGN(1024);
     KEEP(*(.user_eeprom))
-  } > EEPROM
+  } >EEPROM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :

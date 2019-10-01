@@ -30,50 +30,57 @@ volatile uint8_t dmaTXBusy = 0; // 0 uartDMA RX IS NOT DONE
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE]; //Receviving Buffer
 extern TimerConfig SushiTimer;
 
-/**
- * @FIX: Consistency between newline call is hoible... some strings start with them others end, some just call a function when it's needed. It's pretty bad and needs to be fixed
- */
+/* Defines used for input management */
+#define _INPUT_ARRAY_LEN 11         //Input Array Length
+#define _INPUT_MAX_DECIMALS 10      //Input Array Length
+#define _MAX_DECIMAL_PLACES 3       //Input Array Length
+/* Variables used for the input data management */
+uint8_t inputArrayIDX;              //Keeps Track of the INDEX of Data Entry WHile Entering Data
+char inputArray[_INPUT_ARRAY_LEN];  //A 32 Bit number is at maximum 10 human readable digits long
+char outputArray[_INPUT_ARRAY_LEN]; //ITOA output array
+
+/* PWM Floating Point Buisness */
+static uint32_t mantissaINT;                             //Convert the mantissa to an integer
+static uint32_t charisticINT;                            //Convert the charistic to an interger
+static char mantissa[_INPUT_MAX_DECIMALS];               //Numbers before the decimal
+static char charistic[4];                                //Numbers Behind the decimal 3 Places + Null Terminator
 
 /* SushiBoard Magic Text Values to be used by SushiOS !!!NOTE!!! If you are running out of space there would be optimization to be done here.*/
-__attribute__((section(".user_eeprom"))) const char sushiAuthorText[]               = "SushiBoard 0.0.1\n\r\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V1.0\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputCursor[]          = "> ";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputTonText[]         = "\n\rEnter the maximum pulse time on in uS\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputToffText[]        = "\n\rEnter the minimum pulse time off in uS\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from the trigger in uS\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputMatchingOnText[]  = "SushiBoard now matches inputs. Saved to SRAM\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiMenuInputMatchingOffText[] = "SushiBoard will now filters inputs. Saved to SRAM\n\r";
-__attribute__((section(".user_eeprom"))) const char sushiShowTonText[]              = "Ton Value is: ";
-__attribute__((section(".user_eeprom"))) const char sushiShowToffText[]             = "Toff Value is: ";
-__attribute__((section(".user_eeprom"))) const char sushiMenuItemsText[]            = "\n\r[1] Set Pulse Ton Time uS\n\r[2] Set Toff Time (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Turn On Input Matching\n\r[6] Turn Off Input Matching\n\r[7] Save Configuration\n\r[8] Show SRAM Values\n\r[d] Set the debounce time.\n\r[t] Trigger Sushiboard.\n\r[a] Apply Changes.\n\r[p] Set PWM Mode.\n\r[c] Set Trigger Mode.\n\r";
-
+const char sushiAuthorText[]               = "SushiBoard 0.0.2\n\r";
+const char sushiMenuWelcomeText[]          = "SUSHI BOARD CONFIG AGENT V0.3\n\r";
+const char sushiMenuInputCursor[]          = "> ";
+const char sushiMenuInputTonText[]         = "\n\rEnter time on in uS\n\r";
+const char sushiMenuInputToffText[]        = "\n\rEnter the time off in uS\n\r";
+const char sushiMenuInputTDelayText[]      = "\n\rEnter the delay from trigger in uS\n\r";
+const char sushiMenuInputPeriodText[]      = "\n\rEnter the signal period in uS\n\r";
+const char sushiMenuInputMatchingOnText[]  = "SushiBoard matching inputs. Saved to SRAM\n\r";
+const char sushiMenuInputMatchingOffText[] = "SushiBoard filters inputs. Saved to SRAM\n\r";
+const char sushiShowTonText[]              = "Ton Value is = ";
+const char sushiShowToffText[]             = "Toff Value is = ";
+const char sushiMenuItemsText[]            = "\n\r[1] Set Ton Time uS\n\r[2] Set Toff Time (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Enable Input Matching\n\r[6] Disable Input Matching\n\r[7] Save Config\n\r[8] Show SRAM Values\n\r[d] Set the debounce time.\n\r[t] Trigger Sushiboard.\n\r[a] Apply Changes.\n\r[p] Set PWM Duty Cycle.\n\r[c] Set Trigger Mode.\n\r";
 /* These text items will get placed into some other locations in memory */
-const char sushiShowTdelayText[]           = "Tdelay Value is: ";
-const char sushiShowTperiodText[]          = "Tperiod Value is: ";
-const char sushiShowTdebounceText[]        = "Tdebounce Value is: ";
-const char sushiShowInputMatchingText[]    = "Input Matching is: ";
-const char sushiSavingSRAMText[]           = "\n\rSaved to SRAM -  Press '7' to save to EEPROM\n\r";
-const char sushiSavingToEEPROMText[]       = "\n\rSaved Data to EEPROM.\n\r";
-const char sushiInvalidCommandText[]       = "\n\rInvalid Keypress. Press 'm' for menu.\n\r";
+const char sushiShowTdelayText[]           = "Tdelay = ";
+const char sushiShowTperiodText[]          = "Tperiod = ";
+const char sushiShowTdebounceText[]        = "Tdebounce = ";
+const char sushiShowInputMatchingText[]    = "Input Matching = ";
+const char sushiShowPWMvalue[]             = "PWM = ";
+const char sushiSavingSRAMText[]           = "\n\rSaved to SRAM. Press '7' save to FLASH\n\r";
+const char sushiSavingToEEPROMText[]       = "\n\rSaved to EEPROM.\n\r";
+const char sushiInvalidCommandText[]       = "\n\rInvalid Key. 'm' for menu.\n\r";
 const char sushiSetDeounceTimeText[]       = "\n\rEnter switch debounce time in mS\n\r";
-const char sushiMaxInputLenText[]          = " -> !!!INPUT LENGTH LIMIT REACHED!!! TRIMMED TO 10 DIGITS AND SAVED.";
+const char sushiMaxInputLenText[]          = " -> !INPUT LIMIT REACHED! TRIMMED TO 10 DIGITS.";
 const char sushiTriggerExeText[]           = "\n\rTrigger successful.\n\r";
 const char sushiApplyText[]                = "\n\rChanges Applied\n\r>";
 const char sushiTrueText[]                 = "True ";
 const char sushiFalseText[]                = "False ";
 const char sushiNewLineReturn[]            = "\n\r";
-const char sushiMenuSaveSushiStateText[]   = "Now Saving Changes to SushiBoard.\n\r"; //Saving changes to Sushiboard User Notificaion....
 const char sushiClearScreen[4]             = { 27 , '[' , '2' , 'J' }; //This is the clear screen command... I still dont know if it is best to use this
-
 /* EXTENDED PWM FUNCTIONALITY */
-const char sushiDutyCycleText[]            = "\n\rEnter the desired duty cycle %\n\r";
-
-/* Variables used for the input data management */
-#define _INPUT_ARRAY_LEN 11         //Input Array Length
-uint8_t inputArrayIDX;              //Keeps Track of the INDEX of Data Entry WHile Entering Data
-char inputArray[_INPUT_ARRAY_LEN];  //A 32 Bit number is at maximum 10 human readable digits long
-char outputArray[_INPUT_ARRAY_LEN]; //ITOA output array
+const char sushiDutyCycleText[]            = "\n\rEnter the duty cycle %\n\r";
+const char pwmSetTextNotification[]        = "\n\rPWM Set @ ";
+const char pwmSetPercent[]                 = "%";
+const char pwmSetTextDecimal[]             = ".";
+const char pwm100PercentWarn[]             = "\n\rLarge Value - PWM = 100%";
 
 /**
  * @desc: This is the input menu system that sushiboard will use for the
@@ -88,15 +95,17 @@ void sushiInputFetch(void){
 		}
 		switch(DMA_RX_Buffer[0]){                       //Check what charicter was pressed !!!FIX ME!!! When you enter this state UNDERSTAND WHICH TRANSACTION IS BERING PROCESSED
 			case 0x0D:{                                 //If the user Presses Enter Then the input array is done and begin processing the input array
-				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingSRAMText, sizeof(sushiSavingSRAMText)); //Let the user know that changes were saved.
-				sushiMenuDisplay();
 				inputArray[inputArrayIDX] = (char)'\0'; //Add Null Termination to the end of the string
 				inputArrayIDX = 0;
-				sushiWriteChangesToSRAM();              //Use ATOI and the previous state to write the data to the variable and then return back to the home menu for more commands
+				sushiWriteChangesToSRAM_UINT();         //Use ATOI and the previous state to write the data to the variable and then return back to the home menu for more commands
+				sushiWriteChangesToSRAM_FLOAT();        //This section could be done better for for now it will work as the previous state case will stay the same and there is no union between cases
+				memset(&inputArray, 0x00, _INPUT_ARRAY_LEN);
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingSRAMText, sizeof(sushiSavingSRAMText)); //Let the user know that changes were saved.
+				sushiMenuDisplay();
 				break;
 			}
 			default:{
-				if (((uint8_t)DMA_RX_Buffer[0] >= 48) & ((uint8_t)DMA_RX_Buffer[0] <= 57)){ //Make sure this is an actual number that is being input, if not just ifnore and wait for enter
+				if ((((uint8_t)DMA_RX_Buffer[0] >= 48) & ((uint8_t)DMA_RX_Buffer[0] <= 57)) | ((uint8_t)DMA_RX_Buffer[0] == '.')){ //Make sure this is an actual number that is being input, if not just ifnore and wait for enter
 					inputArray[inputArrayIDX] = DMA_RX_Buffer[0];                           //Set the Array Element to the Value that the user input into the array
 					inputArrayIDX++;
 				}
@@ -139,19 +148,19 @@ void sushiInputFetch(void){
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputPeriodText, sizeof(sushiMenuInputPeriodText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
-			case 0x35: // Press the Number '5' while in the main menu to turn input matching ON
+			case 0x35: //!!!FIXME!!! Press the Number '5' while in the main menu to turn input matching ON
 				sushiState.inputMatching = 1;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOnText, sizeof(sushiMenuInputMatchingOnText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				sushiMenuState = 0;
 				break;
-			case 0x36: // Press the Number '6' while in the main menu to turn input matching OFF
+			case 0x36: //!!!FIXME!!! Press the Number '6' while in the main menu to turn input matching OFF
 				sushiState.inputMatching = 0;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOffText, sizeof(sushiMenuInputMatchingOffText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				sushiMenuState = 0;
 				break;
-			case 0x37: // '7' Saves Changes to the Devices EEPROM - DO NO USE ALL THE TIME - IMPLEMENT A WRITE COUNTER
+			case 0x37: //DONE '7' Saves Changes to the Devices EEPROM - DO NO USE ALL THE TIME - IMPLEMENT A WRITE COUNTER
 				writeDataToPage();
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingToEEPROMText, sizeof(sushiSavingToEEPROMText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
@@ -159,26 +168,29 @@ void sushiInputFetch(void){
 			case 0x38:
 				sushiMenuShowState();
 				break;
-			case 0x64: // Press the letter 'd' - Save the state of the debounce timing. - WORKS WEll
+			case 0x64: //DONE Press the letter 'd' - Save the state of the debounce timing. - WORKS WEll
 				sushiMenuState = 1;
 				sushiMenuStatePrevious = 6;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSetDeounceTimeText, sizeof(sushiSetDeounceTimeText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
-			case 0x74: // 't' Activates the trigger, will not work in matching mode. - WORKS WELL
+			case 0x74: //DONE 't' Activates the trigger, will not work in matching mode. - WORKS WELL
 				sushiMenuState = 0;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTriggerExeText, sizeof(sushiTriggerExeText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
 				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
 				break;
-			case 0x54: // 'T' Activates the trigger, NO DISPLAY OR ANYTHING JUST DOES IT VERY FAST RESPOSNE - WORKS WELL
+			case 0x54: //DONE 'T' Activates the trigger, NO DISPLAY OR ANYTHING JUST DOES IT VERY FAST RESPOSNE - WORKS WELL
 				sushiMenuState = 0;
 				HAL_NVIC_SetPendingIRQ(EXTI0_1_IRQn);
 				HAL_NVIC_ClearPendingIRQ(EXTI0_1_IRQn);
 				break;
 			case 0x70: // 'p' Activates Switches to PWM Mode Continious
-
+				sushiMenuState = 1;
+				sushiMenuStatePrevious = 7;
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiDutyCycleText, sizeof(sushiDutyCycleText));
+				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
 				break;
 			case 0x61: // 'a' Applies the changes made in ram - does not save them
@@ -193,6 +205,43 @@ void sushiInputFetch(void){
 	}
 }
 
+
+/**
+ * @desc: Based on the previous state the user will be able to write their setting changes to the
+ */
+void sushiWriteChangesToSRAM_UINT(void){
+	int inputValue = atoi(inputArray); //Transfrom the char string the user input into an int.
+	switch(sushiMenuStatePrevious){    //Take the previous state before data entry began and use that
+		case 2: sushiState.tOn       = (uint32_t)inputValue; break; //Save the time on Variable
+		case 3: sushiState.tOff      = (uint32_t)inputValue; break; //Save the time off Variable
+		case 4: sushiState.tDelay    = (uint32_t)inputValue; break; //Save the time delay variable
+		case 5: sushiState.tPeriod   = (uint32_t)inputValue; break; //Save the pulse duration variable
+		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
+		default: sushiMenuState = 0;
+	}
+	sushiMenuState = 0; //Now that variables are stored into memory move back to the main menu system
+}
+
+/**
+ * @desc: Based on the previous state the user will be able to write their setting changes to the
+ */
+void sushiWriteChangesToSRAM_FLOAT(void){
+	float value;
+	switch(sushiMenuStatePrevious){    //Take the previous state before data entry began and use that
+		case 7:
+			value = sushi_atoff(inputArray, 11); //Transfrom the char string the user input into an int.
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)pwmSetTextNotification, sizeof(pwmSetTextNotification));
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)mantissa, sizeof(mantissa));
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)pwmSetTextDecimal, sizeof(pwmSetTextDecimal));
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)charistic, sizeof(charistic));
+			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)pwmSetPercent, sizeof(pwmSetPercent));
+			SushiTimer.dutyCycle = value;
+			break; //Save the pulse duration variable
+		default: sushiMenuState = 0;
+	}
+	sushiMenuState = 0; //Now that variables are stored into memory move back to the main menu system
+}
+
 /**
  * Apply the changes made to the Sushiboard - Input Matching needs a reboot and is not a part of this
  */
@@ -204,6 +253,7 @@ void applyChanges(void){
  * @desc: Prints out Sushiboards Parameters stored in SRAM these are different than the values saved in EEPROM
  **/
 void sushiMenuShowState(void){
+	char floatTemp[10];
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuWriteVAR(sushiState.tOn, sushiShowTonText, sizeof(sushiShowTonText));
 	sushiMenuWriteVAR(sushiState.tOff, sushiShowToffText, sizeof(sushiShowToffText));
@@ -215,6 +265,11 @@ void sushiMenuShowState(void){
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiFalseText, sizeof(sushiFalseText));  //0 = Not Input Matching, 1 = true
 	else
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTrueText, sizeof(sushiTrueText));
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowPWMvalue, sizeof(sushiShowPWMvalue));
+	memset(floatTemp, 0x00, 10);
+	ftoa(SushiTimer.dutyCycle, floatTemp, 3);
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)floatTemp, sizeof(floatTemp));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 	/*Still Need to make a special function fot Tinput_matching */
@@ -229,22 +284,7 @@ void sushiMenuWriteVAR(uint32_t var, const char* text, uint8_t len){
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	memset(&outputArray, 0x00, _INPUT_ARRAY_LEN);
 }
-/**
- * @desc: Based on the previous state the user will be able to write their setting changes to the
- */
-void sushiWriteChangesToSRAM(void){
-	int inputValue = atoi(inputArray); //Transfrom the char string the user input into an int.
-	switch(sushiMenuStatePrevious){ //Take the previous state before data entry began and use that
-		case 2: sushiState.tOn       = (uint32_t)inputValue; break; //Save the time on Variable
-		case 3: sushiState.tOff      = (uint32_t)inputValue; break; //Save the time off Variable
-		case 4: sushiState.tDelay    = (uint32_t)inputValue; break; //Save the time delay variable
-		case 5: sushiState.tPeriod   = (uint32_t)inputValue; break; //Save the pulse duration variable
-		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
-		default: sushiMenuState = 0;
-	}
-	memset(&inputArray, 0x00, _INPUT_ARRAY_LEN);
-	sushiMenuState = 0; //Now that variables are stored into memory move back to the main menu system
-}
+
 /**
  * @desc: Give the user a cursor '> ' to enter commands into
  */
@@ -252,6 +292,7 @@ void sushiDisplayCursor(void){
 	sushiMenuStatePrevious = sushiMenuState;
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 }
+
 /**
  * @desc: VIA Semiblocking DMA UART, Send over the menu contents to the user
  */
@@ -259,6 +300,7 @@ void sushiMenuDisplay(void){
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuItemsText, sizeof(sushiMenuItemsText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 }
+
 /**
  * @desc: Displays the Full Welcome Screen with Details of Device, Including Version
  */
@@ -271,6 +313,7 @@ void sushiMenuWelcome(void){
 	sushiDisplayCursor();
 	sushiMenuState = 0;
 }
+
 /**
  * @desc: Allows for a blocking TX so that if the user needs to USE HAL_UART_Transmit_DMA in the same function call it is possible
  * @desc2: THe reason for this is if you use 2 HAL_UART_Transmit_DMA in the same function call, the State will get stuck as busy, and a callback is not executed until the function completes
@@ -283,4 +326,126 @@ void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t
 	sushiUART.gState = HAL_UART_STATE_READY;  //This must be called
 	sushiUART1tx.State = HAL_DMA_STATE_READY; //This must be called
 	__HAL_UNLOCK(&sushiUART1tx); //This Must be Called
+}
+
+/**
+ * @desc: Added Function for a less safe but smaller version of atoff in the stdlib
+ **/
+float sushi_atoff(char *text, uint8_t size){
+	uint8_t decimalIDX = 0; //Index of the Decimal Point
+	uint8_t i = 0; //Index used to track loops and counts
+	for(uint8_t i = 0; i < size; i++){
+		if(text[i] == 0x2E){
+			break;                                                 //Break on the deciaml if found
+		}
+		else{
+			mantissa[i] = text[i];                                 //Copy the decimal in to the mantissa first
+			decimalIDX++;                                          //Increment the decimals place
+		}
+	}
+	mantissa[decimalIDX] = '\0';                                   //Add in the NULL TERMINATOR to the mantissa
+	decimalIDX++;                                                  //Increment the IDX to jump the decimal on the input
+	uint8_t decimalIDXStop = decimalIDX + 3;                       //The Stop Pin
+	for(; decimalIDX < decimalIDXStop; decimalIDX++){              //The decimal index starts at the position of the deciaml + 1, then counts up to 3 place breaking on the newline
+		if(text[decimalIDX] == '\0'){
+			break;
+		}
+		else{
+			charistic[i] = text[decimalIDX];                           //Copy the decimal in to the mantissa first
+			i++;//Break on the NULL TERMINATOR
+		}
+	}
+	while (i <= 3){                                                 //Padding Operation
+		charistic[i] = '0';
+		i++;
+	}
+	charistic[3] = '\0';                                           //NULL Terminate the charistic
+	mantissaINT  = atoi(mantissa);                                 //Convert the mantissa to an integer
+	charisticINT = atoi(charistic);                                //Convert the charistic to an interger
+	float result = (float)mantissaINT + ((float)charisticINT / 1000);       //Return the Result
+	if (result > 100){
+		result = 100;
+		mantissaINT = 100;
+		charisticINT = 0;
+		mantissa[0] = '1';
+		mantissa[1] = '0';
+		mantissa[2] = '0';
+		mantissa[3] = '\0';
+		charistic[0] = '\0';
+		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)pwm100PercentWarn, sizeof(pwm100PercentWarn));
+	}
+	return result;               //Return the result
+
+}
+
+/**
+ * @desc: Converts a Float to ASCII for Writing to Screen
+ */
+char * ftoa(double f, char * buf, int precision)
+{
+	char * ptr = buf;
+	char * p = ptr;
+	char * p1;
+	char c;
+	long intPart;
+	// check precision bounds
+	if (precision > MAX_PRECISION)
+		precision = MAX_PRECISION;
+	// sign stuff
+	if (f < 0){
+		f = -f;
+		*ptr++ = '-';
+	}
+	if (precision < 0){  // negative precision == automatic precision guess
+		if (f < 1.0) precision = 6;
+		else if (f < 10.0) precision = 5;
+		else if (f < 100.0) precision = 4;
+		else if (f < 1000.0) precision = 3;
+		else if (f < 10000.0) precision = 2;
+		else if (f < 100000.0) precision = 1;
+		else precision = 0;
+	}
+	// round value according the precision
+	if (precision)
+		f += rounders[precision];
+	// integer part...
+	intPart = f;
+	f -= intPart;
+	if (!intPart)
+		*ptr++ = '0';
+	else{
+		// save start pointer
+		p = ptr;
+		// convert (reverse order)
+		while (intPart){
+			*p++ = '0' + intPart % 10;
+			intPart /= 10;
+		}
+		// save end pos
+		p1 = p;
+		// reverse result
+		while (p > ptr){
+			c = *--p;
+			*p = *ptr;
+			*ptr++ = c;
+		}
+
+		// restore end pos
+		ptr = p1;
+	}
+	// decimal part
+	if (precision){
+		// place decimal point
+		*ptr++ = '.';
+		// convert
+		while (precision--){
+			f *= 10.0;
+			c = f;
+			*ptr++ = '0' + c;
+			f -= c;
+		}
+	}
+	// terminating zero
+	*ptr = 0;
+	return buf;
 }

@@ -22,7 +22,7 @@ void SystemClock_Config(void);
 char const sushiBootText[] = "Sushiboard Booted - Enjoy Safely\n\r> ";
 char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Changes Require Restart\n\r> ";
 
-__attribute__((section(".user_eeprom"))) const uint32_t flashParameters[15] = {
+__attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] = {
 		6,                    //Time on DEFAULT = 6US
 		10,                   //Time off DEFAULT = 10US
 		1000,                 //Period DEFAULT = 1MS period
@@ -40,11 +40,9 @@ __attribute__((section(".user_eeprom"))) const uint32_t flashParameters[15] = {
 		0                     //Not USed Yet
 };
 
-__attribute__((section(".user_eeprom"))) const float flashFloatParameters[1] = {
-		50.0                  //Deafault Float Value
+__attribute__((section(".user_eeprom"))) volatile float flashFloatParameters[1] = {
+		50.1                  //Deafault Float Value
 };
-
-__attribute__((section(".user_eeprom"))) const char author[] = "Reese Russell";
 
 volatile SushiState sushiState;
 
