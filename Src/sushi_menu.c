@@ -7,7 +7,7 @@
 
 #include "sushi_menu.h"
 
-/***
+/**
  * Key List
  * --------------
  * ESC -> Goes back to the main menu
@@ -20,7 +20,7 @@
  * 1 <- data entry
  * 2-8 <- OPTION 1-7
  * 10 <- Process and write data
- */
+ **/
 
 int sushiMenuStatePrevious = 0; // 0 is the default menu state;
 int sushiMenuState = 0;         // Last state the menu was in this is used for the modification of the internal variables;

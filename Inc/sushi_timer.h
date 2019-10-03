@@ -43,6 +43,14 @@ typedef enum LongPulse{
 /**
  * @desc: This struct contains a bunch of stuff needed for the usage of the PWM timers and such, also used in interrupts
  */
+typedef struct PWMConfig{
+	uint16_t period;
+	uint16_t prescaler;
+} PWMConfig;
+
+/**
+ * @desc: This struct contains a bunch of stuff needed for the usage of the PWM timers and such, also used in interrupts
+ */
 typedef struct TimerConfig{
 	TimerMode mode;            //What mode is the Counter Running In
 	TimeBase  tb;              //For PWM what is the timebase being used to derive the longer shrot pulses
@@ -58,6 +66,7 @@ typedef struct TimerConfig{
 
 /* Helper Functions and Externs */
 SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
+PWMConfig factorPWMResoltion32bit(uint32t cycles);
 
 /* Main Function Group */
 void signalGenCounter(uint16_t timeMS); // Determines the time to repeat the signal... for longer runs

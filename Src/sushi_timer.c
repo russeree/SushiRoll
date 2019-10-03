@@ -44,7 +44,23 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	TC->mode = PWM;
-	/* First Check and see if we can just do a direct input into the timer */
+	switch(timebase){
+		case TB_1S:
+			clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
+			break;
+		case TB_1MS:
+			clkCycles = 48000;    //48000 Cycles to count to 1MS
+			break;
+		case TB_1US:
+			clkCycles = 48;       //48 Cycles to count to 1US
+			break;
+		case TB_CoreClock:
+			clkCycles = 1;        //Core Clock is always just 1 cycle per cycle
+			break;
+		default:
+			return SushiFail;
+	}
+	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
 	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
 		uint16_t dutyCyclePulse = (dutyCycle/100)*units;
 		sushiTimeBaseInit(TC, units, timebase); //Begin the Timebase generation Loop
@@ -53,22 +69,6 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 	}
 	else{
 		/* Calculate the number of cycles needed for a complete period */
-		switch(timebase){
-			case TB_1S:
-				clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
-				break;
-			case TB_1MS:
-				clkCycles = 48000;    //48000 Cycles to count to 1MS
-				break;
-			case TB_1US:
-				clkCycles = 48;       //48 Cycles to count to 1US
-				break;
-			case TB_CoreClock:
-				clkCycles = 1;        //Core Clock is always just 1 cycle per cycle
-				break;
-			default:
-				return SushiFail;
-		}
 		clkCycles *= units;                            //This is the total number of cycles necessary at the given period value
 		TC->counts = clkCycles / 0xFFFFFFFF;           //Total Number of cycles needed to pass for a given period  -IF LARGE THAN 1, the period overflows the timer - THESE EVENTS MUST BE HANDED IN THE INTERUPT LOOP
 		TC->remainingCycles = clkCycles % TC->counts;  //Final Number of cycles left over for the counter
