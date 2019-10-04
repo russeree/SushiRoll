@@ -10,4 +10,9 @@ Sushibaord started about as an idea for a IGBT controlled xenon Flash. Where the
 ## Why build Sushiroll?
 Sushiroll is the name given to the firmware package used with the onboard STM32F0 MCU. Sushiroll uses the STM32 HAL driver set but avoids the used of CUBEMX for anything other than the initial boot code generation. The need for a true frimware arose with the failure of about 4 different IGBT and MOSFET ICs. This is because at peak voltage the IGBT can not conduct in a short circuit. This is discovered when combing through the datasheets of IXYS IGBTs. The IGBT datasheet even when it says there the capability to handle a large current for 1ms, there is also listed a second parameter. This parameter is the SHORT CIRCUIT time; usually on the order of just a few uS, not even close to the mS time. This parameter is critical to not be ignored, when an IGBT fails the mode of failure is to become short circuit. This means that with loads such as motors that could propel people would be latched up and consuming as much power as the source can deliver. This will occur until either the IGBT or load fails. Suhiboards firmware implements timers and protection methods to enable safer operation of these IGBTs under near short loads. 
 
+## Output Load Types 
+- Flash Tube
+- Battery Desulfator
+
+
 ![SushiBoard V0.1](/Assets/SushiBoard.jpeg)
