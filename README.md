@@ -13,6 +13,7 @@ Sushiroll is the name given to the firmware package used with the onboard STM32F
 ## Output Load Types 
 - Flash Tube
 - Battery Desulfator
+- Motor Controller
 
 
 ![SushiBoard V0.1](/Assets/SushiBoard.jpeg)
