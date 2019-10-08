@@ -6,7 +6,7 @@
  */
 
 /**
- *  Flashes Variables to the Sushi Board EEPROM PAGE: Does not use interupts, This is becuase it is un-neccesarry
+ *  Flashes Variables to the Sushi Board EEPROM PAGE: Does not use interrupts.
  **/
 
 #include "sushi_flash.h"
