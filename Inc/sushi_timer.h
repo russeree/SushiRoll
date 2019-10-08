@@ -11,6 +11,12 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
+/* Output type of PWM Optimization Algorithm */
+typedef struct Output {
+	uint16_t prescalar;
+	uint16_t period;
+}Output;
+
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 typedef enum TimeBase{
 	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
@@ -66,7 +72,7 @@ typedef struct TimerConfig{
 
 /* Helper Functions and Externs */
 SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
-PWMConfig factorPWMResoltion32bit(uint32t cycles);
+Output TimebaseGen(uint32_t period, uint32_t timebase, uint32_t resolutionParts);
 
 /* Main Function Group */
 void signalGenCounter(uint16_t timeMS); // Determines the time to repeat the signal... for longer runs

@@ -62,6 +62,7 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 	}
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
 	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
+		TimebaseGen(100,100,100);
 		uint16_t dutyCyclePulse = (dutyCycle/100)*units;
 		sushiTimeBaseInit(TC, units, timebase); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);   //Begin the PWM Setup
@@ -253,4 +254,50 @@ void signalGenCounter(uint16_t units){
 	__HAL_TIM_ENABLE_IT(&sigGenTimer1,TIM_IT_UPDATE);
 	HAL_NVIC_SetPriority(TIM16_IRQn, 4, 1);
 	HAL_NVIC_EnableIRQ(TIM16_IRQn);
+}
+
+/**
+ * @desc: Time Base Generation Algorithm
+ **/
+
+Output TimebaseGen(uint32_t period, uint32_t timebase, uint32_t resolutionParts){
+	Output result = { .period = 0, .prescalar = 0};
+	uint32_t clkCycles = period * timebase;
+	uint16_t resolutionUnits = clkCycles / resolutionParts; //This is the maxmimum number of units that the counter is allowed to miss by when calculating a solution for this problem,
+	uint16_t resolution = clkCycles >> 16;                  //This is the time base maximum counted resulution in the timer. If this value is Zero, Given the number of requested cycles there is certainly the ability to run a prescaler of 0 and the period will fit within the timer
+	uint32_t maxError = clkCycles + resolutionUnits;        //This is the maximum value that can be accepted with any level of tollerance
+	if (resolutionUnits <= 1) {
+		resolutionUnits = 5;                                //Units = .0075% Max error of total time
+		maxError = clkCycles + resolutionUnits;
+	}
+	if (maxError > 0xFFFe0001){
+		maxError = 0xFFFFFFFF;
+		clkCycles = 0xFFFe0001;                             //65535 * 2
+	}
+	if (resolution == 0){                                   //If the count is less then a 16 bit number the count will fit within the domain of the of the Peiod so just use the period and control your resultion via the method.
+		result.period = clkCycles;
+		result.prescalar = 0;
+		return result;
+	}
+	else{                                                   //Every other combination fills in this position the goal is the Maximize the combination of prescaler * period > resultion scale, within the desired error margin
+		uint8_t done = 0;
+		for (uint16_t i = 0xFFFF; i > 0; i--) {
+			uint16_t j = 1;
+			uint32_t time;
+			do {
+				time = j * i;
+				if (time > maxError) {
+					break;
+				}
+				if ((time <= maxError) && (time >= clkCycles)){
+					result.period = i;
+					result.prescalar = j;
+					done = 1;
+					break;
+				}
+			}while(++j != 0);
+			if (done){break;}
+		}
+	}
+	return result;
 }
