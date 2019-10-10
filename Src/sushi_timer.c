@@ -40,11 +40,12 @@ TimerConfig SushiTimer = {
 
 SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint64_t clkCycles = 0;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint64_t clkCycles = 1;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
 	TC->mode = PWM;
+	/*
 	switch(timebase){
 		case TB_1S:
 			clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
@@ -61,9 +62,12 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 		default:
 			return SushiFail;
 	}
+	*/
+	clkCycles *= units;
+	clkCycles *= timebase;
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
-	if ((timebase <= 0xFFFF) && (units <= 0xFFFF)){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
-		TimerCountConfig = TimebaseGen(units, timebase * clkCycles, 6);
+	if (clkCycles <= 0xFFFe0001){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
+		TimerCountConfig = TimebaseGen(clkCycles, 6);
 		uint16_t dutyCyclePulse = (dutyCycle/100) * TimerCountConfig.period;
 		sushiTimeBaseInit(TC, TimerCountConfig.period, TimerCountConfig.prescalar); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);                                       //Begin the PWM Setup
@@ -261,9 +265,9 @@ void signalGenCounter(uint16_t units){
  * @desc: Time Base Generation Algorithm
  **/
 
-Output TimebaseGen(uint32_t period, uint32_t timebase, uint32_t resolutionParts){
+Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 	Output result = { .period = 0, .prescalar = 0};
-	uint32_t clkCycles = period * timebase;
+	uint32_t clkCycles = cycles;
 	uint16_t resolutionUnits = clkCycles / resolutionParts; //This is the maxmimum number of units that the counter is allowed to miss by when calculating a solution for this problem,
 	uint16_t resolution = clkCycles >> 16;                  //This is the time base maximum counted resulution in the timer. If this value is Zero, Given the number of requested cycles there is certainly the ability to run a prescaler of 0 and the period will fit within the timer
 	uint32_t maxError = clkCycles + resolutionUnits;        //This is the maximum value that can be accepted with any level of tollerance
