@@ -19,7 +19,6 @@ extern UART_HandleTypeDef sushiUART;
 extern uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];
 extern void writeDataToPage(void);
 
-
 #define MAX_PRECISION	(10)
 static const double rounders[MAX_PRECISION + 1] =
 {

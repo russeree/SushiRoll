@@ -40,29 +40,11 @@ TimerConfig SushiTimer = {
 
 SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint64_t clkCycles = 1;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint32_t clkCycles = 1;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
 	TC->mode = PWM;
-	/*
-	switch(timebase){
-		case TB_1S:
-			clkCycles = 18000000; //Using the 1 Second Time Base, There is only 18MM Clock Cycles, this is because of the face we will use a 4x clock divider to get there on the tiemr
-			break;
-		case TB_1MS:
-			clkCycles = 48000;    //48000 Cycles to count to 1MS
-			break;
-		case TB_1US:
-			clkCycles = 48;       //48 Cycles to count to 1US
-			break;
-		case TB_CoreClock:
-			clkCycles = 1;        //Core Clock is always just 1 cycle per cycle
-			break;
-		default:
-			return SushiFail;
-	}
-	*/
 	clkCycles *= units;
 	clkCycles *= timebase;
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
