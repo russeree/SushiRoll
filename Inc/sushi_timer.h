@@ -84,7 +84,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 SushiStatus sushiTIM1DeinitPWM(void);
 SushiStatus sushiTIM1BaseDeinit(void);
 /* SAL Sushi Abstraction Layer */
-SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle);
+SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, float dutyCycle);
 
 extern SushiState sushiState;
 extern TimerConfig SushiTimer;

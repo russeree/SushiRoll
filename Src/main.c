@@ -25,13 +25,13 @@ char const sushiInputMatchingText[] = "Sushiboard is Matching Inputs - Device Ch
 __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] = {
 		6,                    //Time on DEFAULT = 6US
 		10,                   //Time off DEFAULT = 10US
-		1000,                 //Period DEFAULT = 1MS period
+		2000,                 //Period DEFAULT = 1MS period
 		100,                  //Delay DEFAULT = 100US
 		InputMatchingFalse,   //Do Not Match Inputs - Input matching overrides all Modes
 		5,                    //5ms Debounce - Cherry MX Blues spec
 		SignalModePWM,        //Sig-Gen Mode
 		TB_1US,               //Default is a 1US Timebose for a 16MHZ HSE Oscillator
-		1000,                 //Default Counts Last 32 bit
+		2000,                 //Default Counts Last 32 bit
 		0,                    //NOT USED FOR NOW - WHEN 64 BIT PULSES ARRAIVE
 		0,                    //Not Used Yet
 		0,                    //Not Used Yet

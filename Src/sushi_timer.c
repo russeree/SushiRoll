@@ -20,9 +20,9 @@ TIM_OC_InitTypeDef tcOff;                                              // Timer 
 
 /* INIT OF THE TIEMER COFIGURATION VOLATILE AS INTERUPTS USE IT FOR COUNTING*/
 TimerConfig SushiTimer = {
-	.mode = Trigger,   //Trigger Mode By Default
-	.tb = TB_1US,      //Use a 1uS timebase
-	.longP = LP_False  //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
+	.mode =  Trigger,   //Trigger Mode By Default
+	.tb =    TB_1US,    //Use a 1uS timebase
+	.longP = LP_False   //No Long Pulses Necessary -> Other Values of this typedef will be derived and used accordingly
 };
 
 /**
@@ -38,9 +38,9 @@ TimerConfig SushiTimer = {
 #define MAX_PRESCALER 0xFFFF     //Max possible prescaler
 #define MAX_PERIOD    0xFFFF     //Max Possible period
 
-SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, float dutyCycle){
+SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint32_t clkCycles = 1;    //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint32_t clkCycles = 1;                                                        //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
@@ -56,25 +56,7 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint64_t units, fl
 		return SushiSuccess;                                                        //This loop is already done, everything fits so everything is easy
 	}
 	else{
-		/* Calculate the number of cycles needed for a complete period */
-		clkCycles *= units;                            //This is the total number of cycles necessary at the given period value
-		TC->counts = clkCycles / 0xFFFFFFFF;           //Total Number of cycles needed to pass for a given period  -IF LARGE THAN 1, the period overflows the timer - THESE EVENTS MUST BE HANDED IN THE INTERUPT LOOP
-		TC->remainingCycles = clkCycles % TC->counts;  //Final Number of cycles left over for the counter
-		TC->pwmCount = clkCycles * (dutyCycle / 100);  //This is the number at which the duty cycle will flip
-		TC->dutyCycle = dutyCycle;
-		/* Now that we have all the data Determine a Configuration for the SushiTimer */
-		if(TC->counts == 0){
-			TC->longP = LP_False; //LP False Means that the timer can handle the loop internally and there is no need for interrupt based time keeping
-		}
-		else{
-			TC->longP = LP_True; //LP True means that the interrupt handler must take care of the PWM generation
-		}
-		/* NOW WE GENERATE THE IDEAL SIGNAL - First is lets use the best prescaler value for our timer is there is no long pulse needed */
-		if(TC->longP == LP_False){
-			uint16_t tb = TC->counts / 0xFFFF; //Setup the clock so that the period is always 65535 units long, the prescaler is adjusted to fit timebase
-			sushiTimeBaseInit(TC, MAX_PERIOD, tb);
-			return SushiSuccess;
-		}
+		/* This Section needs to be completed for longer pulse lengths */
 	}
 	return SushiSuccess;
 }
@@ -142,7 +124,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 	//Setup The Timer Parameters
 	pulseTimer1.Instance               = TIM1;                          //Using Timer 1
 	pulseTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;            //This timer will count upwards 0,1,2,3..... Period, 0, 1 ...
-	pulseTimer1.Init.Period            = period - 1;                    //The period will be 1000 us counts before an update event DMA trigger -1 is for the fact the 0 tick takes up a cycle
+	pulseTimer1.Init.Period            = period;                        //The period will be 1000 us counts before an update event DMA trigger -1 is for the fact the 0 tick takes up a cycle
 	pulseTimer1.Init.Prescaler         = timebase;                      //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
 	pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;        //Clock is Divided by 1
 	pulseTimer1.Init.RepetitionCounter = 0;                             //Use A Repetition Counter
@@ -246,7 +228,6 @@ void signalGenCounter(uint16_t units){
 /**
  * @desc: Time Base Generation Algorithm
  **/
-
 Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 	Output result = { .period = 0, .prescalar = 0};
 	uint32_t clkCycles = cycles;
@@ -267,7 +248,6 @@ Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 		return result;
 	}
 	else{                                                   //Every other combination fills in this position the goal is the Maximize the combination of prescaler * period > resultion scale, within the desired error margin
-		uint8_t done = 0;
 		for (uint16_t i = 0xFFFF; i > 0; i--) {
 			uint16_t j = 1;
 			uint32_t time;
@@ -278,12 +258,10 @@ Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 				}
 				if ((time <= maxError) && (time >= clkCycles)){
 					result.period = i;
-					result.prescalar = j;
-					done = 1;
-					break;
+					result.prescalar = j - 1;
+					return result;
 				}
 			}while(++j != 0);
-			if (done){break;}
 		}
 	}
 	return result;
