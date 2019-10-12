@@ -14,9 +14,8 @@
 /* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
 typedef enum TimeBase{
 	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
-	TB_1US = (HSE_VALUE * _PLL_MUL) / 1000000 - 1, // 48 cycles for sushiboard
-	TB_1MS = (HSE_VALUE * _PLL_MUL) / 1000 - 1,    // 48000 cycles for sushiboard
-	TB_1S  = 0xFFFFFFFF                            // This just has to be a value that the other 3 are not
+	TB_1US = 48,      // 48 cycles for sushiboard
+	TB_1MS = 48000,   // 48000 cycles for sushiboard
 } TimeBase;
 /**
  * If the timebase is equal to 1 second -> set to 255 so that the repetition counter Counter knows when to stop,

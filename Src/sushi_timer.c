@@ -40,12 +40,12 @@ TimerConfig SushiTimer = {
 
 SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint32_t clkCycles = 1;                                                        //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
+	uint32_t clkCycles = 0;                                                        //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
 	TC->mode = PWM;
-	clkCycles *= units;
+	clkCycles += units;
 	clkCycles *= timebase;
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
 	if (clkCycles <= 0xFFFe0001){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
@@ -230,20 +230,19 @@ void signalGenCounter(uint16_t units){
  **/
 Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 	Output result = { .period = 0, .prescalar = 0};
-	uint32_t clkCycles = cycles;
-	uint16_t resolutionUnits = clkCycles / resolutionParts; //This is the maxmimum number of units that the counter is allowed to miss by when calculating a solution for this problem,
-	uint16_t resolution = clkCycles >> 16;                  //This is the time base maximum counted resulution in the timer. If this value is Zero, Given the number of requested cycles there is certainly the ability to run a prescaler of 0 and the period will fit within the timer
-	uint32_t maxError = clkCycles + resolutionUnits;        //This is the maximum value that can be accepted with any level of tollerance
+	uint16_t resolutionUnits = cycles / resolutionParts; //This is the maxmimum number of units that the counter is allowed to miss by when calculating a solution for this problem,
+	uint16_t resolution = cycles >> 16;                  //This is the time base maximum counted resulution in the timer. If this value is Zero, Given the number of requested cycles there is certainly the ability to run a prescaler of 0 and the period will fit within the timer
+	uint32_t maxError = cycles + resolutionUnits;        //This is the maximum value that can be accepted with any level of tollerance
 	if (resolutionUnits <= 1) {
 		resolutionUnits = 5;                                //Units = .0075% Max error of total time
-		maxError = clkCycles + resolutionUnits;
+		maxError = cycles + resolutionUnits;
 	}
 	if (maxError > 0xFFFe0001){
 		maxError = 0xFFFFFFFF;
-		clkCycles = 0xFFFe0001;                             //65535 * 2
+		cycles = 0xFFFe0001;                             //65535 * 2
 	}
 	if (resolution == 0){                                   //If the count is less then a 16 bit number the count will fit within the domain of the of the Peiod so just use the period and control your resultion via the method.
-		result.period = clkCycles;
+		result.period = cycles;
 		result.prescalar = 0;
 		return result;
 	}
@@ -256,7 +255,7 @@ Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 				if (time > maxError) {
 					break;
 				}
-				if ((time <= maxError) && (time >= clkCycles)){
+				if ((time <= maxError) && (time >= cycles)){
 					result.period = i;
 					result.prescalar = j - 1;
 					return result;
