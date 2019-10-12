@@ -33,7 +33,7 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] =
 		1,                    //Default is a 1US Timebose for a 16MHZ HSE Oscillator can not be 0
 		80,                   //Default Counts Last 32 bit - Minimum is 80
 		0,                    //NOT USED FOR NOW - WHEN 64 BIT PULSES ARRAIVE
-		0,                    //Not Used Yet
+		0,                    //Custom
 		0,                    //Not Used Yet
 		0,                    //Not Used Yet
 		0,                    //Not Used Yet
@@ -83,7 +83,7 @@ int main(void){
  */
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
-		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
+		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		gateDriveParallelPulseTimerInit();

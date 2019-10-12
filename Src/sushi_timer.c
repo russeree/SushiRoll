@@ -38,15 +38,13 @@ TimerConfig SushiTimer = {
 #define MAX_PRESCALER 0xFFFF     //Max possible prescaler
 #define MAX_PERIOD    0xFFFF     //Max Possible period
 
-SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, float dutyCycle){
+SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
 	uint32_t clkCycles = 0;                                                        //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
 	TC->mode = PWM;
-	clkCycles += units;
-	clkCycles *= timebase; //Units * Timebase = Total Clock Cycles needed - Minimum 80 - Max 65535 * 65535 - Seems to work excelent
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
 	if (clkCycles <= 0xFFFe0001){                                                   //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
 		TimerCountConfig = TimebaseGen(clkCycles, 6);
@@ -226,7 +224,7 @@ void signalGenCounter(uint16_t units){
 }
 
 /**
- * @desc: Time Base Generation Algorithm
+ * @desc: Time Base Generation Algorithm - This algorithm finds the optimal resoltuon for the PWM timer for the highest acuracy.
  **/
 Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 	Output result = { .period = 0, .prescalar = 0};
@@ -234,19 +232,19 @@ Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts){
 	uint16_t resolution = cycles >> 16;                  //This is the time base maximum counted resulution in the timer. If this value is Zero, Given the number of requested cycles there is certainly the ability to run a prescaler of 0 and the period will fit within the timer
 	uint32_t maxError = cycles + resolutionUnits;        //This is the maximum value that can be accepted with any level of tollerance
 	if (resolutionUnits <= 1) {
-		resolutionUnits = 5;                                //Units = .0075% Max error of total time
+		resolutionUnits = 5;                             //Units = .0075% Max error of total time
 		maxError = cycles + resolutionUnits;
 	}
 	if (maxError > 0xFFFe0001){
 		maxError = 0xFFFFFFFF;
 		cycles = 0xFFFe0001;                             //65535 * 2
 	}
-	if (resolution == 0){                                   //If the count is less then a 16 bit number the count will fit within the domain of the of the Peiod so just use the period and control your resultion via the method.
+	if (resolution == 0){                                //If the count is less then a 16 bit number the count will fit within the domain of the of the Peiod so just use the period and control your resultion via the method.
 		result.period = cycles;
 		result.prescalar = 0;
 		return result;
 	}
-	else{                                                   //Every other combination fills in this position the goal is the Maximize the combination of prescaler * period > resultion scale, within the desired error margin
+	else{                                                //Every other combination fills in this position the goal is the Maximize the combination of prescaler * period > resultion scale, within the desired error margin
 		for (uint16_t i = 0xFFFF; i > 0; i--) {
 			uint16_t j = 1;
 			uint32_t time;

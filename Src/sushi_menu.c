@@ -251,7 +251,7 @@ void sushiWriteChangesToSRAM_UINT(void){
 		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
 		case 8: //Change the Period - Timebase is still a freeely Modifyable variable,
 			SushiTimer.counts    = (uint32_t)inputValue; break; //Save the PWM Period
-			sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
+			sushiSetupPWM(&SushiTimer, (uint32_t)(sushiState.pwmTimeBase * SushiTimer.counts), SushiTimer.dutyCycle);
 			break;
 		case 9:
 			if (inputValue == 0){
@@ -291,7 +291,7 @@ void sushiWriteChangesToSRAM_FLOAT(void){
 			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)charistic, sizeof(charistic));
 			sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)pwmSetPercent, sizeof(pwmSetPercent));
 			SushiTimer.dutyCycle = value;
-			sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
+			sushiSetupPWM(&SushiTimer, (uint32_t)(sushiState.pwmTimeBase * SushiTimer.counts), SushiTimer.dutyCycle);
 			break; //Save the pulse duration variable
 		default: sushiMenuState = 0;
 	}

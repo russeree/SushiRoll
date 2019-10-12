@@ -11,16 +11,12 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
-/* Sushiboard Specific The (HSE_VALUE * _PLL_MUL = APB1 Frequecy */
+/* Sushiboard Specific Defines Used for PWM time keeping */
 typedef enum TimeBase{
-	TB_CoreClock = 0, //Single Cycle - Used for strange timing considerations 20.83333uS
-	TB_1US = 48,      // 48 cycles for sushiboard
-	TB_1MS = 48000,   // 48000 cycles for sushiboard
+	TB_CoreClock = 1,       //Single Cycle - Used for strange timing considerations 20.83333uS
+	TB_1US       = 48,      // 48 cycles for sushiboard
+	TB_1MS       = 48000,   // 48000 cycles for sushiboard
 } TimeBase;
-/**
- * If the timebase is equal to 1 second -> set to 255 so that the repetition counter Counter knows when to stop,
- * this uses more cycles than a 16bit integer can hold so you have to use the repition counter....
- **/
 
 /**
  * @desc: Modes of operation for Sushiboard - PWM continuous - and manually triggered
@@ -83,7 +79,7 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
 SushiStatus sushiTIM1DeinitPWM(void);
 SushiStatus sushiTIM1BaseDeinit(void);
 /* SAL Sushi Abstraction Layer */
-SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, float dutyCycle);
+SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle);
 
 extern SushiState sushiState;
 extern TimerConfig SushiTimer;
