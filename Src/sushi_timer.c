@@ -9,7 +9,7 @@
 #include "sushi_timer.h"
 #include "sushi_dma.h"
 
-//extern volatile uint8_t sigMode;                                       // The signal timebase mode
+//extern volatile uint8_t sigMode;                                     // The signal timebase mode
 
 TIM_HandleTypeDef pulseTimer1;                                         // TimeBase Structure
 TIM_HandleTypeDef debounceTimer1;                                      // TimeBase Structure
@@ -46,9 +46,9 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, fl
 	Output TimerCountConfig;
 	TC->mode = PWM;
 	clkCycles += units;
-	clkCycles *= timebase;
+	clkCycles *= timebase; //Units * Timebase = Total Clock Cycles needed - Minimum 80 - Max 65535 * 65535 - Seems to work excelent
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
-	if (clkCycles <= 0xFFFe0001){ //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
+	if (clkCycles <= 0xFFFe0001){                                                   //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
 		TimerCountConfig = TimebaseGen(clkCycles, 6);
 		uint16_t dutyCyclePulse = (dutyCycle/100) * TimerCountConfig.period;
 		sushiTimeBaseInit(TC, TimerCountConfig.period, TimerCountConfig.prescalar); //Begin the Timebase generation Loop
@@ -65,9 +65,9 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, TimeBase timebase, uint32_t units, fl
  * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
  */
 SushiStatus sushiTIM1DeinitPWM(void){
-	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1); //Stop the PWM timers Channel 1 and 2
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);
-	HAL_DMA_Abort(&pulseGenOnDMATimer);
+	HAL_DMA_Abort(&pulseGenOnDMATimer);            //Abort the DMA channel
 	HAL_DMA_Abort(&pulseGenOffDMATimer);
 	return SushiSuccess;
 }
