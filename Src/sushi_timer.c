@@ -81,6 +81,7 @@ SushiStatus sushiTIM1BaseDeinit(void){
 	if(HAL_TIM_Base_GetState(&pulseTimer1) >  HAL_TIM_STATE_RESET){  //If the timer has been initizlized
 		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop Timer 1 - Pulse Train Generator
 		HAL_TIM_PWM_DeInit(&pulseTimer1);
+		sushiTIM1DeinitPWM(); //De-Init the PWM to turn off the IO on the change in rate transfer
 	}
 	return SushiSuccess;
 }
@@ -90,7 +91,6 @@ SushiStatus sushiTIM1BaseDeinit(void){
  */
 SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
 	sushiTIM1DeinitPWM();                                               //Disable the PWM functions on sushibaord
-	__HAL_RCC_TIM1_CLK_ENABLE();
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//Setup the On Timer Channel Outputs
 	tcOn.Pulse        = (uint16_t)0x0000;                               //Time before the DMA request is sent to the BSRR to turn on the switching GPIO

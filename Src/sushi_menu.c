@@ -249,7 +249,7 @@ void sushiWriteChangesToSRAM_UINT(void){
 		case 4: sushiState.tDelay    = (uint32_t)inputValue; break; //Save the time delay variable
 		case 5: sushiState.tPeriod   = (uint32_t)inputValue; break; //Save the pulse duration variable
 		case 6: sushiState.tDebounce = (uint32_t)inputValue; break; //Save the pulse duration variable
-		case 8:
+		case 8: //Change the Period - Timebase is still a freeely Modifyable variable,
 			SushiTimer.counts    = (uint32_t)inputValue; break; //Save the PWM Period
 			sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase, SushiTimer.counts, SushiTimer.dutyCycle);
 			break;
