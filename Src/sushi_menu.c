@@ -162,14 +162,12 @@ void sushiInputFetch(void){
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOnText, sizeof(sushiMenuInputMatchingOnText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				NVIC_SystemReset();
-				sushiMenuState = 0;
 				break;
 			case 0x36: //!!!FIXME!!! Press the Number '6' while in the main menu to turn input matching OFF
 				sushiState.inputMatching = 0;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOffText, sizeof(sushiMenuInputMatchingOffText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				NVIC_SystemReset();
-				sushiMenuState = 0;
 				break;
 			case 0x37: //DONE '7' Saves Changes to the Devices EEPROM - DO NO USE ALL THE TIME - IMPLEMENT A WRITE COUNTER
 				writeDataToPage();
@@ -253,14 +251,14 @@ void sushiWriteChangesToSRAM_UINT(void){
 			SushiTimer.counts    = (uint32_t)inputValue; break; //Save the PWM Period
 			sushiSetupPWM(&SushiTimer, (uint32_t)(sushiState.pwmTimeBase * SushiTimer.counts), SushiTimer.dutyCycle);
 			break;
+		/* Input Filtering for the system input  */
 		case 9:
 			if (inputValue == 0){
 				sushiState.sigGenMode = SignalModeTrigger;
 			}
-			else if (inputValue == 1){
+			else{
 				sushiState.sigGenMode = SignalModePWM;
 			}
-			else{}
 			break;
 		case 10:
 			if (inputValue == 0){
@@ -269,9 +267,10 @@ void sushiWriteChangesToSRAM_UINT(void){
 			else if (inputValue == 1){
 				sushiState.pwmTimeBase = TB_1MS;
 			}
-			else{}
+			else{
+				sushiState.pwmTimeBase = inputValue //Cutom User Input, These Values are raw and need to be specificly handled.
+			}
 			break;
-
 		default: sushiMenuState = 0;
 	}
 	sushiMenuState = 0; //Now that variables are stored into memory move back to the main menu system
