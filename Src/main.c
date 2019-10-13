@@ -58,7 +58,7 @@ int main(void){
 	getSushiParameters();                                    //Read out the Data in the Stored EEPROM in the RAM for Use;
 	/* Initialize the GATE DRIVERS and IO*/
 	MX_GPIO_Init();                                          //Init the GPIO please lol at "gpio.c" for more info.
-	gateDriverParallelDMATimerInit();                        //Init the DMA for gate drive timers.
+	advTimerDMAinit();                        //Init the DMA for gate drive timers.
 	/* Init Sushiboard and Subsystem */
 	sushiBoardUARTDMAInit();                                 //Init the UART subsystem for sushibaord DMA COMPONETS
 	initSushiBoardUART();                                    //Init the UART susystem
@@ -83,9 +83,11 @@ int main(void){
  */
 void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModePWM){
+		dmaPWMenableTimer1();
 		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
+		dmaTriggerEnableTimer1();
 		gateDriveParallelPulseTimerInit();
 		switchInputDebouceTimerInit(sushiState.tDebounce);
 	}
