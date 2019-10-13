@@ -42,7 +42,7 @@ void sushiMenuWelcome(void);
 void sushiMenuDisplay(void);
 void sushiMenuShowState(void);
 void sushiDisplayCursor(void);
-void applyChanges(void);
+SushiStatus safeReboot(void);
 /* Handelers and Patches */
 void sushiMenuWriteVAR(uint32_t var, const char* text, uint8_t len);
 void sushiMenuMultiUartDMATX(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);

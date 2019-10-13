@@ -60,7 +60,7 @@ const char sushiMenuInputMatchingOnText[]  = "\n\rSushiBoard matching inputs. Sa
 const char sushiMenuInputMatchingOffText[] = "\n\rSushiBoard filters inputs. Saved to SRAM\n\r";
 const char sushiShowTonText[]              = "Ton Value is = ";
 const char sushiShowToffText[]             = "Toff Value is = ";
-const char sushiMenuItemsText[]            = "\n\r[c] Set Mode\n\r[r] Reset Sushiboard\n\r[w] Set Timebase\n\r[1] Set Ton Time uS\n\r[2] Set Toff Time (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Enable Input Matching\n\r[6] Disable Input Matching\n\r[7] Save Config\n\r[8] Show SRAM Values\n\r[d] Set the debounce time\n\r[t] Trigger Sushiboard\n\r[a] Apply Changes\n\r[p] Set PWM Duty Cycle\n\r[q] Set PWM Period\n\r";
+const char sushiMenuItemsText[]            = "\n\r[c] Set Mode\n\r[r] Reset Sushiboard\n\r[w] Set Timebase\n\r[1] Set Ton Time uS\n\r[2] Set Toff Time (uS)\n\r[3] Set Trigger Delay (uS)\n\r[4] Set Trigger Duration (uS)\n\r[5] Enable Input Matching\n\r[6] Disable Input Matching\n\r[7] Apply & Save State\n\r[8] Show SRAM\n\r[d] Set the debounce time\n\r[t] Trigger Sushi\n\r[p] Set PWM Duty Cycle\n\r[q] Set PWM Period\n\r";
 /* These text items will get placed into some other locations in memory */
 const char sushiShowTdelayText[]           = "Tdelay = ";
 const char sushiShowTperiodText[]          = "Tperiod = ";
@@ -161,20 +161,19 @@ void sushiInputFetch(void){
 				sushiState.inputMatching = 1;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOnText, sizeof(sushiMenuInputMatchingOnText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
-				NVIC_SystemReset();
-				sushiMenuState = 0;
+				safeReboot();
 				break;
 			case 0x36: //!!!FIXME!!! Press the Number '6' while in the main menu to turn input matching OFF
 				sushiState.inputMatching = 0;
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputMatchingOffText, sizeof(sushiMenuInputMatchingOffText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
-				NVIC_SystemReset();
-				sushiMenuState = 0;
+				safeReboot();
 				break;
 			case 0x37: //DONE '7' Saves Changes to the Devices EEPROM - DO NO USE ALL THE TIME - IMPLEMENT A WRITE COUNTER
 				writeDataToPage();
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiSavingToEEPROMText, sizeof(sushiSavingToEEPROMText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
+				safeReboot();
 				break;
 			case 0x38:
 				sushiMenuShowState();
@@ -221,12 +220,9 @@ void sushiInputFetch(void){
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTimeBaseText, sizeof(sushiTimeBaseText));
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMenuInputCursor, sizeof(sushiMenuInputCursor));
 				break;
-			case 0x61: // 'a' Applies the changes made in ram - does not save them
-				applyChanges(); //Applies the Changes
-				break;
 			case 0x72: // 'r' Resets Sushiboard
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
-				NVIC_SystemReset(); //Applies the Changes
+				safeReboot(); //Applies the Changes
 				break;
 			default:{
 				sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInvalidCommandText, sizeof(sushiInvalidCommandText));
@@ -237,7 +233,15 @@ void sushiInputFetch(void){
 	}
 }
 
-
+/**
+ * @desc: Resets Sushibaord safely while applying settings - Turns off IO and Disables ICs
+ */
+SushiStatus safeReboot(void){
+	GPIOA->BSRR = 0x24;         //Disable both chips
+	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
+	NVIC_SystemReset();
+	return SushiSuccess;
+}
 /**
  * @desc: Based on the previous state the user will be able to write their setting changes to the
  */
@@ -299,17 +303,9 @@ void sushiWriteChangesToSRAM_FLOAT(void){
 }
 
 /**
- * Apply the changes made to the Sushiboard - Input Matching needs a reboot and is not a part of this
- */
-void applyChanges(void){
-	gateDriveParallelPulseTimerInit();
-	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiApplyText, sizeof(sushiApplyText));
-}
-/**
  * @desc: Prints out Sushiboards Parameters stored in SRAM these are different than the values saved in EEPROM
  **/
 void sushiMenuShowState(void){
-	char floatTemp[10];
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowMode, sizeof(sushiShowMode));
 	if(sushiState.sigGenMode == SignalModeTrigger){
@@ -323,7 +319,11 @@ void sushiMenuShowState(void){
 	if(sushiState.pwmTimeBase == TB_1US){
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiUSText, sizeof(sushiUSText));
 	}
-	if(sushiState.pwmTimeBase == TB_1MS){
+	else if(sushiState.pwmTimeBase == TB_1MS){
+		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMSText, sizeof(sushiMSText));
+	}
+	else{
+		itoa(sushiState.pwmTimeBase , outputArray, 10);
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiMSText, sizeof(sushiMSText));
 	}
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
@@ -339,9 +339,9 @@ void sushiMenuShowState(void){
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiTrueText, sizeof(sushiTrueText));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiShowPWMvalue, sizeof(sushiShowPWMvalue));
-	memset(floatTemp, 0x00, 10);
-	ftoa(SushiTimer.dutyCycle, floatTemp, 3);
-	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)floatTemp, sizeof(floatTemp));
+	memset(outputArray, 0x00, 10);
+	ftoa(SushiTimer.dutyCycle, outputArray, 3);
+	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)outputArray, sizeof(outputArray));
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiNewLineReturn, sizeof(sushiNewLineReturn));
 	sushiMenuWriteVAR(SushiTimer.counts, sushiShowPWMperiodText, sizeof(sushiShowPWMperiodText));
 	/*Show the Mode*/
