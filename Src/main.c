@@ -29,8 +29,8 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] =
 		100,                  //Delay DEFAULT = 100US
 		InputMatchingFalse,   //Do Not Match Inputs - Input matching overrides all Modes
 		5,                    //5ms Debounce - Cherry MX Blues spec
-		SignalModePWM,        //Sig-Gen Mode
-		TB_1MS,                    //Default is a 1US Timebose for a 16MHZ HSE Oscillator can not be 0
+		SignalModeTrigger,    //Sig-Gen Mode
+		TB_1US,               //Default is a 1US Timebose for a 16MHZ HSE Oscillator can not be 0
 		30,                   //Default Counts Last 32 bit - Minimum is 80
 		0,                    //NOT USED FOR NOW - WHEN 64 BIT PULSES ARRAIVE
 		0,                    //Custom
@@ -58,11 +58,11 @@ int main(void){
 	getSushiParameters();                                    //Read out the Data in the Stored EEPROM in the RAM for Use;
 	/* Initialize the GATE DRIVERS and IO*/
 	MX_GPIO_Init();                                          //Init the GPIO please lol at "gpio.c" for more info.
-	advTimerDMAinit();                        //Init the DMA for gate drive timers.
 	/* Init Sushiboard and Subsystem */
 	sushiBoardUARTDMAInit();                                 //Init the UART subsystem for sushibaord DMA COMPONETS
 	initSushiBoardUART();                                    //Init the UART susystem
 	sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiBootText, sizeof(sushiBootText));
+	advTimerDMAinit();                                       //Init the DMA for gate drive timers.
 	setupTimerState();                                       //Determine the state of operations PWM or Trigger -> Input Matching will override all in the end.
 	/* Main Loop: No Code all Interupt Driven*/
 	if (sushiState.inputMatching == InputMatchingTrue){      //If you are matching inputs then just take the input pin and
@@ -88,7 +88,7 @@ void setupTimerState(void){
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		dmaTriggerEnableTimer1();
-		gateDriveParallelPulseTimerInit();
+		triggerModeInit();
 		switchInputDebouceTimerInit(sushiState.tDebounce);
 	}
 }

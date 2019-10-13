@@ -38,6 +38,24 @@ TimerConfig SushiTimer = {
 #define MAX_PRESCALER 0xFFFF     //Max possible prescaler
 #define MAX_PERIOD    0xFFFF     //Max Possible period
 
+/**
+ * @desc: De-Init The PWM -> Switch to the Triggered Mode Or Just Disable All the Stuff so that the mode switch goes seemlessly
+ */
+SushiStatus FullDeInitPwmMode(void){
+	GPIOA->BSRR = 0x24;         //Disable both chips
+	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1); //Stop the 2 timer Channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2); //Stop the 2 timer Channels
+	HAL_DMA_Abort(&pulseGenOnDMATimer);            //Abort the DMA channel
+	HAL_DMA_Abort(&pulseGenOffDMATimer);
+	HAL_TIM_PWM_DeInit(&pulseTimer1);              //De-Init The base Timer
+	HAL_TIM_Base_Stop(&pulseTimer1);               //Stop the time base - Pulse Train Generator
+	return SushiSuccess;
+}
+
+/**
+ * @desc: This is the function to setup the PWM loop -> Timers and DMA
+ */
 SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
 	/* Setup the State Machine Values */
@@ -48,6 +66,7 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 	if (cycles <= 0xFFFe0001){                                                   //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
 		TimerCountConfig = TimebaseGen(cycles, 6);
 		uint16_t dutyCyclePulse = (dutyCycle/100) * TimerCountConfig.period;
+		HAL_DMA_Abort(&pulseGenOffDMATimer);
 		sushiTimeBaseInit(TC, TimerCountConfig.period, TimerCountConfig.prescalar); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);                                       //Begin the PWM Setup
 		return SushiSuccess;                                                        //This loop is already done, everything fits so everything is easy
@@ -64,8 +83,6 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 SushiStatus sushiTIM1DeinitPWM(void){
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1); //Stop the PWM timers Channel 1 and 2
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);
-	HAL_DMA_Abort(&pulseGenOnDMATimer);            //Abort the DMA channel
-	HAL_DMA_Abort(&pulseGenOffDMATimer);
 	return SushiSuccess;
 }
 
@@ -142,8 +159,8 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
  * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
  * @Note: Without Adjusting period.... due to the fact the timer is limited to 16 bits 65535us or 65.535ms Max Pulse Length.
  */
-void gateDriveParallelPulseTimerInit(void){                             // 10ms Period
-	uint16_t usPrescaler = (HSE_VALUE * 3 / 1000000) - 1;             // Number of cycles to generate 1m_pulses/sec
+void triggerModeInit(void){                                    // 10ms Period
+	uint16_t prescaler = (uint16_t)sushiState.pwmTimeBase - 1;         // Use the timebase Number Here
 	//Enabled Needed Clock Signals for the Timer peripheral
 	__HAL_RCC_TIM1_CLK_ENABLE();
 	//Setup The Timer Parameters
@@ -151,7 +168,7 @@ void gateDriveParallelPulseTimerInit(void){                             // 10ms 
 	pulseTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;        //Do not divide the counter clock
 	pulseTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;            //This timer will count upwards 0,1,2,3..... Period, 0, 1 ...
 	pulseTimer1.Init.Period            = (uint16_t)sushiState.tPeriod;  //The period will be 1000 us counts before an update event DMA trigger
-	pulseTimer1.Init.Prescaler         = usPrescaler;                   //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
+	pulseTimer1.Init.Prescaler         = prescaler;                     //for a 16MHZ clock this needs to be 16, this will enable a 1us pulse time
 	pulseTimer1.Init.RepetitionCounter = 0;                             //No repition. Just run in a loop
 	pulseTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE; //Shadow Mask.... Just enable it
 	//Setup the On Timer Channel Outputs

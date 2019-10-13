@@ -71,6 +71,7 @@ void NMI_Handler(void){
 void HardFault_Handler(void){
 	GPIOA->BSRR = 0x24;         //Disable both chips
 	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
+	NVIC_SystemReset();         //Reset the System
 	while (1)
 	{
 		//If we need to do anything here do it... Toggling IO will loop
@@ -129,8 +130,7 @@ void EXTI0_1_IRQHandler(void){
 }
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
-	if((0) && (sushiState.sigGenMode == SignalModeTrigger))
-	{
+	if(sushiState.sigGenMode == SignalModeTrigger){
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
 		//I Dont know why I have to do this sequence to prevent a bounce high after the trigger
@@ -138,6 +138,7 @@ void TIM14_IRQHandler(void){
 		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
 		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
 		__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
+		sushiDBGPin(10);
 		HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);     // Moves the Source Address Of IO that is high to the PIN
 		HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1);
 		HAL_TIM_Base_Stop(&debounceTimer1);        //Fire up the debounce time

@@ -37,7 +37,6 @@ SushiStatus dmaPWMenableTimer1(void){
 	SAL_SAFE_DMA_Abort(&pulseGenOffDMATimer);
 	//Lets do Some Fun Stuff Here... DAM CC1 and 2 Events -> send the data to the BSSR registers for a pulse on and off
 	pulseGenOnDMATimer.Init.Mode                 = DMA_CIRCULAR;
-	//Setup the DMA Turn off timer Parameters
 	pulseGenOffDMATimer.Init.Mode                = DMA_CIRCULAR;
 	//Fire up the DMA ENGINE
 	HAL_DMA_DeInit(&pulseGenOnDMATimer);  //Why de-init? Maybe to make sure all registers are reset
@@ -54,13 +53,13 @@ SushiStatus dmaTriggerEnableTimer1(void){
 	SAL_SAFE_DMA_Abort(&pulseGenOffDMATimer);
 	//Lets do Some Fun Stuff Here... DAM CC1 and 2 Events -> send the data to the BSSR registers for a pulse on and off
 	pulseGenOnDMATimer.Init.Mode                 = DMA_NORMAL;
-	//Setup the DMA Turn off timer Parameters
 	pulseGenOffDMATimer.Init.Mode                = DMA_NORMAL;
 	//Fire up the DMA ENGINE
 	HAL_DMA_DeInit(&pulseGenOnDMATimer);  //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&pulseGenOnDMATimer);    //Init with the DMA Update.....
 	HAL_DMA_DeInit(&pulseGenOffDMATimer); //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
+	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0); //Second highest priority  level.
 	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn); //Now enable the Interupt
 	return SushiSuccess;
 }
@@ -68,8 +67,6 @@ SushiStatus dmaTriggerEnableTimer1(void){
 // DMA Timer Initialize
 SushiStatus advTimerDMAinit(void){
 	__HAL_RCC_DMA1_CLK_ENABLE();
-	SAL_SAFE_DMA_Abort(&pulseGenOnDMATimer);     //This is used for the initial DMA configuration and clearing - DMA starts in a
-	SAL_SAFE_DMA_Abort(&pulseGenOffDMATimer);
 	//Setup the DMA Turn on  timer Parameters
 	pulseGenOnDMATimer.Instance                  = DMA1_Channel2;
 	pulseGenOnDMATimer.Init.Direction            = DMA_MEMORY_TO_PERIPH;
@@ -88,8 +85,6 @@ SushiStatus advTimerDMAinit(void){
 	pulseGenOffDMATimer.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
 	pulseGenOffDMATimer.Init.PeriphInc           = DMA_PINC_DISABLE;
 	pulseGenOffDMATimer.Init.Priority            = DMA_PRIORITY_VERY_HIGH;
-	//Fire up the DMA ENGINE
-	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0); //Second highest priority  level.
 	return SushiSuccess;
 }
 
