@@ -268,7 +268,7 @@ void sushiWriteChangesToSRAM_UINT(void){
 				sushiState.pwmTimeBase = TB_1MS;
 			}
 			else{
-				sushiState.pwmTimeBase = inputValue //Cutom User Input, These Values are raw and need to be specificly handled.
+				sushiState.pwmTimeBase = inputValue; //Cutom User Input, These Values are raw and need to be specificly handled.
 			}
 			break;
 		default: sushiMenuState = 0;
