@@ -40,14 +40,13 @@ TimerConfig SushiTimer = {
 
 SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 	/* Determine the needed number of clock cycles for the entire period from the base unit */
-	uint32_t clkCycles = 0;                                                        //This Number is used to determine the clock based on it's time scale can be prescaled down to or if there needs to be some intervention
 	/* Setup the State Machine Values */
 	sushiState.sigGenMode = SignalModePWM;
 	Output TimerCountConfig;
 	TC->mode = PWM;
 	/* First Check and see if we can just do a direct input into the timer - This needs to be optimized*/
-	if (clkCycles <= 0xFFFe0001){                                                   //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
-		TimerCountConfig = TimebaseGen(clkCycles, 6);
+	if (cycles <= 0xFFFe0001){                                                   //The parameters we are using to generate a timebase fit inside the 16bit prescaler NO MATH NEEDED FOR THE GENERATION OF THE TIMEBASE !!!DONE PWM & TIMEBASE!!!
+		TimerCountConfig = TimebaseGen(cycles, 6);
 		uint16_t dutyCyclePulse = (dutyCycle/100) * TimerCountConfig.period;
 		sushiTimeBaseInit(TC, TimerCountConfig.period, TimerCountConfig.prescalar); //Begin the Timebase generation Loop
 		sushiPWMBaseInit(TC, dutyCyclePulse);                                       //Begin the PWM Setup

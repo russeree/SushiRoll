@@ -30,8 +30,8 @@ __attribute__((section(".user_eeprom"))) volatile uint32_t flashParameters[15] =
 		InputMatchingFalse,   //Do Not Match Inputs - Input matching overrides all Modes
 		5,                    //5ms Debounce - Cherry MX Blues spec
 		SignalModePWM,        //Sig-Gen Mode
-		1,                    //Default is a 1US Timebose for a 16MHZ HSE Oscillator can not be 0
-		80,                   //Default Counts Last 32 bit - Minimum is 80
+		TB_1MS,                    //Default is a 1US Timebose for a 16MHZ HSE Oscillator can not be 0
+		30,                   //Default Counts Last 32 bit - Minimum is 80
 		0,                    //NOT USED FOR NOW - WHEN 64 BIT PULSES ARRAIVE
 		0,                    //Custom
 		0,                    //Not Used Yet

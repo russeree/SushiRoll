@@ -22,7 +22,6 @@ uint32_t swOff[1] = {0x001B << 16}; //For use by DMA to push this onto the BSSR 
 extern UART_HandleTypeDef sushiUART; //External instance of UART to link to the  DMA channels 4/5
 
 SushiStatus dmaPWMenableTimer1(void){
-	__HAL_RCC_DMA1_CLK_ENABLE();
 	HAL_DMA_Abort(&pulseGenOnDMATimer);
 	HAL_DMA_Abort(&pulseGenOffDMATimer);
 	//Lets do Some Fun Stuff Here... DAM CC1 and 2 Events -> send the data to the BSSR registers for a pulse on and off
