@@ -87,9 +87,9 @@ void setupTimerState(void){
 		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
+		switchInputDebouceTimerInit(sushiState.tDebounce);
 		dmaTriggerEnableTimer1();
 		triggerModeInit();
-		switchInputDebouceTimerInit(sushiState.tDebounce);
 	}
 }
 

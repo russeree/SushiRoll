@@ -43,6 +43,7 @@ SushiStatus dmaPWMenableTimer1(void){
 	HAL_DMA_Init(&pulseGenOnDMATimer);    //Init with the DMA Update.....
 	HAL_DMA_DeInit(&pulseGenOffDMATimer); //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
+	GPIOA->BSRR = 0x0024 << 16;
 	HAL_NVIC_DisableIRQ(DMA1_Channel2_3_IRQn); //Now enable the Interupt
 	return SushiSuccess;
 }
@@ -59,6 +60,7 @@ SushiStatus dmaTriggerEnableTimer1(void){
 	HAL_DMA_Init(&pulseGenOnDMATimer);    //Init with the DMA Update.....
 	HAL_DMA_DeInit(&pulseGenOffDMATimer); //Why de-init? Maybe to make sure all registers are reset
 	HAL_DMA_Init(&pulseGenOffDMATimer);   //Init with the DMA Update.....
+	GPIOA->BSRR = 0x0024 << 16;
 	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 2, 0); //Second highest priority  level.
 	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn); //Now enable the Interupt
 	return SushiSuccess;

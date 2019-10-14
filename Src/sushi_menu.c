@@ -261,13 +261,17 @@ void sushiWriteChangesToSRAM_UINT(void){
 			if (inputValue == 0){
 				FullDeInitPwmMode();                       //De-Init the PWM
 				sushiState.sigGenMode = SignalModeTrigger; //Switch mode to the trigger mode
+				switchInputDebouceTimerInit(sushiState.tDebounce);
 				dmaTriggerEnableTimer1();                  //Enable the trigger timer 1
 				triggerModeInit();                         //Trigger Mode Started
 			}
-			else if (inputValue == 1){
+			if (inputValue == 1){
+				FullDeInitTriggerMode();
+				dmaPWMenableTimer1();
+				sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 				sushiState.sigGenMode = SignalModePWM;
+
 			}
-			else{}
 			break;
 		case 10:
 			if (inputValue == 0){

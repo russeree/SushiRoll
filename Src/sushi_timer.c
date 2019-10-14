@@ -34,22 +34,43 @@ TimerConfig SushiTimer = {
  * @notes: The only timebases you can directly enter into the timer are ClockCycle, 1US, and 1MS. MAX COUNT 65535
  */
 
-#define MAX_CYCLES    0xFFFFFFFF //Max Possible Cycles Given the use of the Prescaler and the use of the Period @48MHZ this is just about ‭268.4354559375‬ Seconds and 1,073.74182375‬ if the Clock is divided by 4
-#define MAX_PRESCALER 0xFFFF     //Max possible prescaler
-#define MAX_PERIOD    0xFFFF     //Max Possible period
-
 /**
  * @desc: De-Init The PWM -> Switch to the Triggered Mode Or Just Disable All the Stuff so that the mode switch goes seemlessly
  */
 SushiStatus FullDeInitPwmMode(void){
-	GPIOA->BSRR = 0x24;         //Disable both chips
-	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
-	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1); //Stop the 2 timer Channels
-	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2); //Stop the 2 timer Channels
-	HAL_DMA_Abort(&pulseGenOnDMATimer);            //Abort the DMA channel
+	__HAL_TIM_DISABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
+	__HAL_TIM_DISABLE_DMA(&pulseTimer1, TIM_DMA_CC2);                    //Capture Compare 2 Event (User event, This may not be used)
+	HAL_DMA_Abort(&pulseGenOnDMATimer);                                  //Abort the DMA channel
 	HAL_DMA_Abort(&pulseGenOffDMATimer);
-	HAL_TIM_PWM_DeInit(&pulseTimer1);              //De-Init The base Timer
-	HAL_TIM_Base_Stop(&pulseTimer1);               //Stop the time base - Pulse Train Generator
+	HAL_DMA_DeInit(&pulseGenOnDMATimer);
+	HAL_DMA_DeInit(&pulseGenOffDMATimer);
+	GPIOA->BSRR = 0x24;                                                  //Disable both chips
+	GPIOA->BSRR = 0x001B << 16;                                          //Trun off all the output channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);                       //Stop the 2 timer Channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);                       //Stop the 2 timer Channels
+	HAL_TIM_PWM_DeInit(&pulseTimer1);                                    //De-Init The base Timer
+	HAL_TIM_Base_Stop(&pulseTimer1);                                     //Stop the time base - Pulse Train Generator
+	return SushiSuccess;
+}
+
+/**
+ * @desc FULL Trigger De-initialization Sequence - Use this to
+ */
+
+SushiStatus FullDeInitTriggerMode(void){
+	__HAL_TIM_DISABLE_DMA(&pulseTimer1, TIM_DMA_CC1);                    //Capture Compare 1 Event (Load the Off Data)
+	__HAL_TIM_DISABLE_DMA(&pulseTimer1, TIM_DMA_CC2);                    //Capture Compare 2 Event (User event, This may not be used)
+	HAL_DMA_Abort(&pulseGenOnDMATimer);                                  //Abort the DMA channel
+	HAL_DMA_Abort(&pulseGenOffDMATimer);
+	HAL_DMA_DeInit(&pulseGenOnDMATimer);
+	HAL_DMA_DeInit(&pulseGenOffDMATimer);
+	GPIOA->BSRR = 0x24;                                                  //Disable both chips
+	GPIOA->BSRR = 0x001B << 16;                                          //Trun off all the output channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);                       //Stop the 2 timer Channels
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);                       //Stop the 2 timer Channels
+	HAL_TIM_PWM_DeInit(&pulseTimer1);                                    //De-Init The base Timer
+	HAL_TIM_Base_Stop(&pulseTimer1);                                     //Stop the time base - Pulse Train Generator
+	HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);                       //Disable the IRQ That the Trigger Uses - PWM is circular DMA No Interupts
 	return SushiSuccess;
 }
 
@@ -71,18 +92,6 @@ SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle){
 		sushiPWMBaseInit(TC, dutyCyclePulse);                                       //Begin the PWM Setup
 		return SushiSuccess;                                                        //This loop is already done, everything fits so everything is easy
 	}
-	else{
-		/* This Section needs to be completed for longer pulse lengths */
-	}
-	return SushiSuccess;
-}
-
-/**
- * @desc: Disables and Truns off Timer1 this allows for a nice and easy switch into the new mode/ or if the timer needs
- */
-SushiStatus sushiTIM1DeinitPWM(void){
-	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1); //Stop the PWM timers Channel 1 and 2
-	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);
 	return SushiSuccess;
 }
 
@@ -95,7 +104,6 @@ SushiStatus sushiTIM1BaseDeinit(void){
 	if(HAL_TIM_Base_GetState(&pulseTimer1) >  HAL_TIM_STATE_RESET){  //If the timer has been initizlized
 		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop Timer 1 - Pulse Train Generator
 		HAL_TIM_PWM_DeInit(&pulseTimer1);
-		sushiTIM1DeinitPWM(); //De-Init the PWM to turn off the IO on the change in rate transfer
 	}
 	return SushiSuccess;
 }
@@ -104,7 +112,8 @@ SushiStatus sushiTIM1BaseDeinit(void){
  * @Desc: Sushibaord Continuous PWM Mode PWM Signal Configuration
  */
 SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount){
-	sushiTIM1DeinitPWM();                                               //Disable the PWM functions on sushibaord
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);                      //Stop the PWM timers Channel 1 and 2
+	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);                      //Disable the PWM functions on sushibaord
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	//Setup the On Timer Channel Outputs
 	tcOn.Pulse        = (uint16_t)0x0000;                               //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
@@ -159,7 +168,8 @@ SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebas
  * @Desc: Init Timer one with interupts on UPDATE and DMA requests on CC matches to enable flipping of bits on the GPIO  BSSR registers
  * @Note: Without Adjusting period.... due to the fact the timer is limited to 16 bits 65535us or 65.535ms Max Pulse Length.
  */
-void triggerModeInit(void){                                    // 10ms Period
+void triggerModeInit(void){                                            // 10ms Period
+	GPIOA->BSRR = 0x00;
 	uint16_t prescaler = (uint16_t)sushiState.pwmTimeBase - 1;         // Use the timebase Number Here
 	//Enabled Needed Clock Signals for the Timer peripheral
 	__HAL_RCC_TIM1_CLK_ENABLE();
