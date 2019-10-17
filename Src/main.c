@@ -69,8 +69,8 @@ int main(void){
 		sushiMenuMultiUartDMATX(&sushiUART, (uint8_t*)sushiInputMatchingText, sizeof(sushiInputMatchingText));
 		HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);                   //Turn off the IRQ we dont need any timer intervention here
 		for(;;){                                             //Now you just match the Inputs until the device reboots. INFINATE LOOP
-			if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){GPIOB->BSRR = (0x001B);}
-			else{GPIOB->BSRR = (0x001B << 16);}
+			if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1)){GPIOA->BSRR = (0x001B);}
+			else{GPIOA->BSRR = (0x001B << 16);}
 		}
 	}
 	else{
@@ -87,6 +87,7 @@ void setupTimerState(void){
 		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
+		signalGenInit(18);
 		switchInputDebouceTimerInit(sushiState.tDebounce);
 		dmaTriggerEnableTimer1();
 		triggerModeInit();
@@ -114,9 +115,8 @@ void getSushiParameters(void){
  * @desc Toggles Pin One With a High Value for the time arg in MS
  */
 void sushiDBGPin(int time){
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	HAL_Delay(time - 1);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 }
 
 /**

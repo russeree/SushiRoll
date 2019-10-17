@@ -65,19 +65,16 @@ typedef struct TimerConfig{
 	volatile uint16_t  remainingCycles; //How many cycles are left over before completing a cycle
 } TimerConfig;
 
-/* Helper Functions and Externs */
-SushiStatus deInitTimer1(void); //Disables the timer1 This is useful for switching between triggered timing and continious operation
-Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts);
-/* Main Function Group */
-void signalGenCounter(uint16_t timeMS);                                             // Determines the time to repeat the signal... for longer runs
+SushiStatus deInitTimer1(void);                                                     //Disables the timer1 This is useful for switching between triggered timing and continious operation
+Output TimebaseGen(uint32_t cycles, uint32_t resolutionParts);                      // Generates the best timebase optiuon for PSM resolution
 void triggerModeInit(void);                                                         // Init a timer designed to trigger all MOSFETs at one time.
 void switchInputDebouceTimerInit(uint16_t timeMS);                                  // This time controls the deboucing timer.
+SushiStatus signalGenInit(uint16_t timeMS);                                         // Determines the time to repeat the signal... for longer runs
+SushiStatus signalGenTrigger(void);                                                 // Determines the time to repeat the signal... for longer runs
 SushiStatus sushiPWMBaseInit(TimerConfig *TC, uint16_t pulseCount);
 SushiStatus sushiTimeBaseInit(TimerConfig *TC, uint16_t period, TimeBase timebase); // PWM Continious Initialization
-/* De-Initialization Function */
 SushiStatus FullDeInitPwmMode(void);
 SushiStatus FullDeInitTriggerMode(void);
-/* SAL Sushi Abstraction Layer */
 SushiStatus sushiSetupPWM(TimerConfig *TC, uint32_t cycles, float dutyCycle);
 
 extern SushiState sushiState;

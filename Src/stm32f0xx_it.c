@@ -34,7 +34,6 @@ extern UART_HandleTypeDef sushiUART;
 extern TIM_HandleTypeDef  pulseTimer1;
 extern TIM_HandleTypeDef  debounceTimer1;
 extern TIM_HandleTypeDef  sigGenTimer1;
-
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
@@ -132,9 +131,10 @@ void EXTI0_1_IRQHandler(void){
 /* Timer 14 the Debounce timer init */
 void TIM14_IRQHandler(void){
 	if(sushiState.sigGenMode == SignalModeTrigger){
+		signalGenTrigger();                        //Fire the trigger just in advance of the - Actual timing Loop
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
-		//I Dont know why I have to do this sequence to prevent a bounce high after the trigger
+		// I Dont know why I have to do this sequence to prevent a bounce high after the trigger
 		pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
 		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
 		__HAL_DMA_ENABLE(&pulseGenOnDMATimer);     //Now enable the DMA Channel
@@ -144,11 +144,6 @@ void TIM14_IRQHandler(void){
 		HAL_TIM_Base_Stop(&debounceTimer1);        //Fire up the debounce time
 	}
 	HAL_TIM_IRQHandler(&debounceTimer1);
-}
-
-/* Timer 14 the Debounce timer init */
-void TIM16_IRQHandler(void){
-	HAL_TIM_IRQHandler(&sigGenTimer1);
 }
 
 /* At the end of each period break the software safety */
@@ -162,7 +157,7 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void){
 	HAL_TIM_IRQHandler(&pulseTimer1);   //Handle the interupt
 }
 
-/* DMA UPDATE HANDLER -UNUSED ON SUSHI BOARD- */
+/* DMA UPDATE HANDLER - UNUSED ON SUSHI BOARD - */
 void DMA1_Channel2_3_IRQHandler(void){
 	HAL_DMA_IRQHandler(&pulseGenOnDMATimer);
 }
@@ -174,9 +169,25 @@ void USART1_IRQHandler(void){
 	}
 	HAL_UART_IRQHandler(&sushiUART);
 }
+
+/* Timer 2 Interupt Handler */
+void TIM2_IRQHandler(void){
+	HAL_TIM_IRQHandler(&sigGenTimer1);   //Handle the interupt
+}
+
+/* HAL Handler Helpers - This means the timer has hit the capture compare event */
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim){
+	if (htim->Instance == TIM2){
+	}
+}
+
+/* This means that the timer has complete the update event */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	if (htim->Instance == TIM2){
+	}
+}
+
 /*DMA CHannel4_5 UART HANDLER - Enables the RX and TX handling*/
-
-
 void DMA1_Channel4_5_IRQHandler(void)
 {
 	if(DMA1->ISR & DMA_ISR_TCIF4) { //RX RECEIVE COMPLETE
