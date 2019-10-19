@@ -78,8 +78,15 @@ void MX_GPIO_Init(void){
 	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
+/* Switch the GPIOB Pin for timer 3 into an output mode to match channel 4; */
+void TIM3PinSetup(void){
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin = GPIO_PIN_1;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

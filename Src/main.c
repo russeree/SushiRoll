@@ -50,7 +50,7 @@ volatile uint8_t  sigMode;        //Signal Modes 0 = Manual Tigger, 1 = Continuo
 volatile uint32_t sigModeCounter; //Counts upward for each tick on the signal mode counter;
 
 int main(void){
-	HAL_NVIC_SetPriority(SysTick_IRQn, 5, 0);                //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be guaranteed
+	HAL_NVIC_SetPriority(SysTick_IRQn, 8, 0);                //On Init Set Systick to take a lower priority than timers and other DMA Channel where timing needs to be guaranteed
 	/* HAL Inits */
 	HAL_Init();                                              //Init the HAL Layer
 	SystemClock_Config();                                    //Init the System Clocks
@@ -87,10 +87,9 @@ void setupTimerState(void){
 		sushiSetupPWM(&SushiTimer, sushiState.pwmTimeBase * SushiTimer.counts, SushiTimer.dutyCycle);
 	}
 	if (sushiState.sigGenMode == SignalModeTrigger){
-		signalGenInit(18);
-		switchInputDebouceTimerInit(sushiState.tDebounce);
 		dmaTriggerEnableTimer1();
 		triggerModeInit();
+		signalGenInit(18);
 	}
 }
 
@@ -115,8 +114,9 @@ void getSushiParameters(void){
  * @desc Toggles Pin One With a High Value for the time arg in MS
  */
 void sushiDBGPin(int time){
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+	HAL_Delay(time);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
 }
 
 /**
@@ -128,6 +128,7 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct   = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct   = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
   /* Initializes the CPU, AHB and APB busses clocks */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState       = RCC_HSE_ON;

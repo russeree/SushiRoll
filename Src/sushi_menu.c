@@ -238,7 +238,7 @@ void sushiInputFetch(void){
  */
 SushiStatus safeReboot(void){
 	GPIOA->BSRR = 0x24;         //Disable both chips
-	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
+	//GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
 	NVIC_SystemReset();
 	return SushiSuccess;
 }

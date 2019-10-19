@@ -32,7 +32,7 @@ extern uint32_t swOff[1];
 extern UART_HandleTypeDef sushiUART;
 
 extern TIM_HandleTypeDef  pulseTimer1;
-extern TIM_HandleTypeDef  debounceTimer1;
+extern TIM_HandleTypeDef  pinBTimer1;
 extern TIM_HandleTypeDef  sigGenTimer1;
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
@@ -47,8 +47,7 @@ uint32_t CNTDR_PRV;
 /**
  * SushiBoard UART PRIORITIES
  * EXTI0_1_IRQHandler                1 *
- * TIM14_IRQHandler                  4 *
- * TIM14_IRQHandler                4-1 *
+ * TIM3_IRQHandler                   4 *
  * TIM1_BRK_UP_TRG_COM_IRQHandler    3 *
  * DMA1_Channel2_3_IRQHandler        2 *
  * SYSTICK                           5 *
@@ -68,7 +67,7 @@ void NMI_Handler(void){
   * @brief This function handles Hard fault interrupt.
   */
 void HardFault_Handler(void){
-	GPIOA->BSRR = 0x24;         //Disable both chips
+	//GPIOA->BSRR = 0x24;         //Disable both chips
 	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
 	NVIC_SystemReset();         //Reset the System
 	while (1)
@@ -116,24 +115,22 @@ void SysTick_Handler(void){
   * @brief This function handles EXTI line 4 to 15 interrupts.
   */
 void EXTI0_1_IRQHandler(void){
-	if(safetyToggle == 0){
+	if((safetyToggle == 0) && (sushiState.sigGenMode == SignalModeTrigger)){
 		safetyToggle = 1;
 		HAL_TIM_Base_Stop(&pulseTimer1);           //Stop Timer 1 - Pulse Train Generator
-		HAL_TIM_Base_Stop(&debounceTimer1);        //Stop Timer 14 - The Debounce Timer
 		__HAL_TIM_SET_COUNTER(&pulseTimer1,0);     //Reset the timer count
-		__HAL_TIM_SET_COUNTER(&debounceTimer1,0);  //Reset the timer count start fresh on the trigger
-		HAL_TIM_Base_Start(&debounceTimer1);       //Fire up the debounce time
-		HAL_TIM_Base_Start(&pulseTimer1);          //Fire up the timer for the Pulse
+		signalGenTrigger();
 	}
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
 }
 
 /* Timer 14 the Debounce timer init */
-void TIM14_IRQHandler(void){
+void TIM3_IRQHandler(void){
 	if(sushiState.sigGenMode == SignalModeTrigger){
-		signalGenTrigger();                        //Fire the trigger just in advance of the - Actual timing Loop
+		//Fire the trigger just in advance of the - Actual timing Loop
 		__HAL_DMA_DISABLE(&pulseGenOnDMATimer);
 		__HAL_DMA_DISABLE(&pulseGenOffDMATimer);
+		HAL_TIM_Base_Start(&pulseTimer1);          //Fire up the timer for the Pulse
 		// I Dont know why I have to do this sequence to prevent a bounce high after the trigger
 		pulseGenOnDMATimer.Instance->CNDTR = 1;    //Set the data transfered to be 1 unit
 		pulseGenOffDMATimer.Instance->CNDTR = 1;   //Set the data transfered to be 1 unit
@@ -141,9 +138,8 @@ void TIM14_IRQHandler(void){
 		__HAL_DMA_ENABLE(&pulseGenOffDMATimer);    //Now enable the DMA Channel
 		HAL_DMA_Start(&pulseGenOnDMATimer, (uint32_t)&swOn, (uint32_t)(&GPIOA->BSRR), 1);     // Moves the Source Address Of IO that is high to the PIN
 		HAL_DMA_Start(&pulseGenOffDMATimer, (uint32_t)&swOff, (uint32_t)(&GPIOA->BSRR), 1);
-		HAL_TIM_Base_Stop(&debounceTimer1);        //Fire up the debounce time
 	}
-	HAL_TIM_IRQHandler(&debounceTimer1);
+	HAL_TIM_IRQHandler(&pinBTimer1);
 }
 
 /* At the end of each period break the software safety */
@@ -168,23 +164,6 @@ void USART1_IRQHandler(void){
 		USART1->ICR = UART_CLEAR_IDLEF; //Clear the idle timeout flag now.
 	}
 	HAL_UART_IRQHandler(&sushiUART);
-}
-
-/* Timer 2 Interupt Handler */
-void TIM2_IRQHandler(void){
-	HAL_TIM_IRQHandler(&sigGenTimer1);   //Handle the interupt
-}
-
-/* HAL Handler Helpers - This means the timer has hit the capture compare event */
-void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim){
-	if (htim->Instance == TIM2){
-	}
-}
-
-/* This means that the timer has complete the update event */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	if (htim->Instance == TIM2){
-	}
 }
 
 /*DMA CHannel4_5 UART HANDLER - Enables the RX and TX handling*/
