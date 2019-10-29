@@ -33,7 +33,6 @@ extern UART_HandleTypeDef sushiUART;
 
 extern TIM_HandleTypeDef  pulseTimer1;
 extern TIM_HandleTypeDef  pinBTimer1;
-extern TIM_HandleTypeDef  sigGenTimer1;
 extern DMA_HandleTypeDef  pulseGenOnDMATimer;
 extern DMA_HandleTypeDef  pulseGenOffDMATimer;
 extern DMA_HandleTypeDef  sushiUART1tx;
@@ -67,9 +66,9 @@ void NMI_Handler(void){
   * @brief This function handles Hard fault interrupt.
   */
 void HardFault_Handler(void){
-	//GPIOA->BSRR = 0x24;         //Disable both chips
-	GPIOA->BSRR = 0x001B << 16; //Trun off all the output channels
-	NVIC_SystemReset();         //Reset the System
+	//GPIOA->BSRR = 0x24;        //Disable both chips
+	GPIOA->BSRR = 0x001B << 16;  //Trun off all the output channels
+	NVIC_SystemReset();          //Reset the System
 	while (1)
 	{
 		//If we need to do anything here do it... Toggling IO will loop

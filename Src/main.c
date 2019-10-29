@@ -89,7 +89,7 @@ void setupTimerState(void){
 	if (sushiState.sigGenMode == SignalModeTrigger){
 		dmaTriggerEnableTimer1();
 		triggerModeInit();
-		signalGenInit(18);
+		signalGenInit(1);
 	}
 }
 

@@ -49,8 +49,8 @@ SushiStatus FullDeInitPwmMode(void){
 	HAL_DMA_Abort(&pulseGenOffDMATimer);
 	HAL_DMA_DeInit(&pulseGenOnDMATimer);
 	HAL_DMA_DeInit(&pulseGenOffDMATimer);
-	//GPIOA->BSRR = 0x24;                                                  //Disable both chips
-	//GPIOA->BSRR = 0x001B << 16;                                          //Trun off all the output channels
+	//GPIOA->BSRR = 0x24;                                                //Disable both chips
+	//GPIOA->BSRR = 0x001B << 16;                                        //Trun off all the output channels
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);                       //Stop the 2 timer Channels
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);                       //Stop the 2 timer Channels
 	HAL_TIM_PWM_DeInit(&pulseTimer1);                                    //De-Init The base Timer
@@ -69,8 +69,8 @@ SushiStatus FullDeInitTriggerMode(void){
 	HAL_DMA_Abort(&pulseGenOffDMATimer);
 	HAL_DMA_DeInit(&pulseGenOnDMATimer);
 	HAL_DMA_DeInit(&pulseGenOffDMATimer);
-	//GPIOA->BSRR = 0x24;                                                  //Disable both chips
-	//GPIOA->BSRR = 0x001B << 16;                                          //Trun off all the output channels
+	//GPIOA->BSRR = 0x24;                                                //Disable both chips
+	//GPIOA->BSRR = 0x001B << 16;                                        //Trun off all the output channels
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_1);                       //Stop the 2 timer Channels
 	HAL_TIM_PWM_Stop(&pulseTimer1, TIM_CHANNEL_2);                       //Stop the 2 timer Channels
 	HAL_TIM_PWM_DeInit(&pulseTimer1);                                    //De-Init The base Timer
@@ -240,15 +240,15 @@ extern void TIM3PinSetup(void);
 SushiStatus signalGenInit(uint16_t timeMS){                                                     //Setup the Timer3 Alternate function pin
 	/* Set up the timebase */
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
-	uint16_t msPrescaler = (SystemCoreClock / 1000) - 1;                //This is the prescaler needed to get a 1uS per tick counter on this device
+	uint16_t usPrescaler = (SystemCoreClock / 1000000) - 1;             //This is the prescaler needed to get a 1uS per tick counter on this device
 	//Enabled Needed Clock Signals for the Timer peripheral
 	__HAL_RCC_TIM3_CLK_ENABLE();
 	//Setup The Timer Parameters
 	pinBTimer1.Instance               = TIM3;                           //Using Timer 1
 	pinBTimer1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;         //Do not divide the counter clock
 	pinBTimer1.Init.CounterMode       = TIM_COUNTERMODE_UP;             //This timer will count upwards 0,1,2,3..... Period, 0, 1 ...
-	pinBTimer1.Init.Period            = (uint16_t)timeMS;               //The period will be 1000 us counts before an update event DMA trigger
-	pinBTimer1.Init.Prescaler         = msPrescaler;                    //for a 16MHZ clock this needs to be 16, this wfill enable a 1us pulse time
+	pinBTimer1.Init.Period            = (uint16_t)timeMS*1000;          //The period will be 1000 us counts before an update event DMA trigger
+	pinBTimer1.Init.Prescaler         = usPrescaler;                    //for a 16MHZ clock this needs to be 16, this wfill enable a 1us pulse time
 	pinBTimer1.Init.RepetitionCounter = 0;                              //No repition. Just run in a loop
 	pinBTimer1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;  //Shadow Mask.... Just enable it
 	HAL_TIM_PWM_Init(&pinBTimer1);
@@ -258,7 +258,7 @@ SushiStatus signalGenInit(uint16_t timeMS){                                     
 		Error_Handler();
 	}
 	//One Shot Mode Enable
-	pinBTimer1.Instance->CR1 |= TIM_OPMODE_SINGLE;                    //Now set the register to stop the timer @ the update event.
+	pinBTimer1.Instance->CR1 |= TIM_OPMODE_SINGLE;                     //Now set the register to stop the timer @ the update event.
 	//Setup the On Timer Channel Outputs
 	pbOff.Pulse        = (uint16_t)1;                                  //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
 	pbOff.OCFastMode   = TIM_OCFAST_DISABLE;                           //No need for fast mode
@@ -266,7 +266,7 @@ SushiStatus signalGenInit(uint16_t timeMS){                                     
 	pbOff.OCPolarity   = TIM_OCPOLARITY_LOW;                           //Doesn't matter but lets make the output compare polarity high
 	pbOff.OCNPolarity  = TIM_OCNPOLARITY_HIGH;                         //Doesn't matter but lets make the output compare polarity high
 	//Setup the On Timer Channel Outputs
-	pbOn.Pulse        = (uint16_t)timeMS-2;                                   //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
+	pbOn.Pulse        = (uint16_t)timeMS*1000-1;                       //Time before the DMA request is sent to the BSRR to turn on the switching GPIO
 	pbOn.OCFastMode   = TIM_OCFAST_DISABLE;                            //No need for fast mode
 	pbOn.OCMode       = TIM_OCMODE_PWM1;                               //Mode is PWM1 this mode is described in reference manual PWM2 is also
 	pbOn.OCPolarity   = TIM_OCPOLARITY_HIGH;                           //Doesn't matter but lets make the output compare polarity high
